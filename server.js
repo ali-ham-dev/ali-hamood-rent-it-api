@@ -7,8 +7,8 @@ import productRouter from './routes/product-routes.js';
 
 // Load environment variables
 dotenv.config();
-const PORT = process.env.PORT || 8085;
-const IP = process.env.IP || '0.0.0.0';
+const SERVER_PORT = process.env.SERVER_PORT || 9095;
+const SERVER_HOST = process.env.SERVER_HOST || '0.0.0.0';
 const app = express();
 
 // Initialize middleware
@@ -18,7 +18,10 @@ app.use(express.json());
 
 // log all requests
 app.use((req, res, next) => {
+  console.log('');
+  console.log('DateTime:', new Date().toISOString());
   console.log('Incoming request:', req.method, req.url);
+  console.log('');
   next();
 });
 
@@ -27,7 +30,9 @@ app.use(express.static('public'));
 app.use('/products', productRouter);
 
 // Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on ${IP}:${PORT}`);
+app.listen(SERVER_PORT, SERVER_HOST, () => {
+    console.log(`Server is running on ${SERVER_HOST}:${SERVER_PORT}`);
     console.log('Press CTRL + C to stop the server');
+}).on('error', (error) => {
+  console.error('Error starting server:', error);
 });

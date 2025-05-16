@@ -1,4 +1,4 @@
-import initKnex from 'kenx';
+import initKnex from 'knex';
 import configuration from '../knexfile.js';
 import { logError } from '../utils/error-logger.js';
 
@@ -10,7 +10,7 @@ const getProduct = async (req, res) => {
             .where('id', req.params.productId)
             .select('*');
         
-        if (!product.lenth) {
+        if (!product.length) {
             return res.status(404).json({
                 message: `Product with id ${req.params.productId} not found`
             });
@@ -25,3 +25,5 @@ const getProduct = async (req, res) => {
         });
     }
 }
+
+export { getProduct };

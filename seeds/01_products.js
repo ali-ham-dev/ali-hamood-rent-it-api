@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+
 /**
  * @param { import('knex').knex } knex
  * @returns { Promise<void> }
@@ -9,13 +11,13 @@ export async function seed(knex) {
         {
             "id": 1,
             "media": JSON.stringify([
-                `http://${process.env.IP}:${process.env.PORT}/public/assets/images/products/product-1/uav-1.png`,
-                `http://${process.env.IP}:${process.env.PORT}/public/assets/images/products/product-1/uav-2.png`,
-                `http://${process.env.IP}:${process.env.PORT}/public/assets/images/products/product-1/uav-3.png`,
-                `http://${process.env.IP}:${process.env.PORT}/public/assets/images/products/product-1/uav-4.png`,
-                `http://${process.env.IP}:${process.env.PORT}/public/assets/images/products/product-1/uav-5.png`,
-                `http://${process.env.IP}:${process.env.PORT}/public/assets/images/products/product-1/uav-6.png`,
-                `http://${process.env.IP}:${process.env.PORT}/public/assets/images/products/product-1/uav-7.png`
+                `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-1.png`,
+                `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-2.png`,
+                `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-3.png`,
+                `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-4.png`,
+                `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-5.png`,
+                `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-6.png`,
+                `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-7.png`
             ]),
             "title": "NAFYRE N11 PRO GPS Drone",
             "tags": JSON.stringify(["uav", "drone", "gps", "camera", "video", "photo"]),
