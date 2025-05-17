@@ -16,7 +16,7 @@ const getProduct = async (req, res) => {
             });
         }
 
-        res.status(200).json(product);
+        res.status(200).json(product[0]);
     } catch (error) {
         logError(error, `retrieving product with id ${req.params.productId}`);
 
