@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { requestLogger } from './utils/logger.js';
+import v1Router from './routes/api/v1/index.js';
 
 // Import routers
-import productRouter from './routes/product-routes.js';
+// import productRouter from './routes/product-routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -18,16 +20,15 @@ app.use(express.json());
 
 // log all requests
 app.use((req, res, next) => {
-  console.log('');
-  console.log('DateTime:', new Date().toISOString());
-  console.log('Incoming request:', req.method, req.url);
-  console.log('');
+  requestLogger(req);
   next();
 });
 
 // Routers
 app.use(express.static('public'));
-app.use('/products', productRouter);
+app.use('/api/v1', v1Router);
+// app.use('/products', productRouter);
+// app.use('/file-extensions', fileExtensionsRouter);
 
 // Start the server
 app.listen(SERVER_PORT, SERVER_HOST, () => {

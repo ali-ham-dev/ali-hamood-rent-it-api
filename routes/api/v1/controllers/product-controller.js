@@ -1,6 +1,6 @@
 import initKnex from 'knex';
-import configuration from '../knexfile.js';
-import { logError } from '../utils/error-logger.js';
+import configuration from '../../../../knexfile.js';
+import { logError } from '../../../../utils/logger.js';
 
 const kenx = initKnex(configuration);
 
