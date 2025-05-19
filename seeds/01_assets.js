@@ -6,8 +6,8 @@ import dotenv from 'dotenv';
  */
 
 export async function seed(knex) {
-    await knex('products').del();
-    await knex('products').insert([
+    await knex('assets').del();
+    await knex('assets').insert([
         {
             "id": 1,
             "media": JSON.stringify([
