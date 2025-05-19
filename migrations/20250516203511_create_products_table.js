@@ -3,12 +3,6 @@
  * @returns { Promise<void> }
  */
 export async function up(knex) {
-
-    const tableExists = await knex.schema.hasTable('assets');
-    if (tableExists) {
-        await knex.schema.dropTable('assets');
-    }
-
     return knex.schema
         .createTable('assets', (table) => {
             table.increments('id').primary();
@@ -20,6 +14,14 @@ export async function up(knex) {
             table.string('specifications').notNullable().defaultTo('');
             table.integer('cost').unsigned().notNullable().defaultTo(0);
             table.string('charge_frequency').notNullable().defaultTo('monthly');
+            table.string('street_address').notNullable().defaultTo('');
+            table.string('city').notNullable().defaultTo('');
+            table.string('state').notNullable().defaultTo('');
+            table.string('postal_code').notNullable().defaultTo('');
+            table.string('country').notNullable().defaultTo('');
+            table.string('latitude').notNullable().defaultTo('');
+            table.string('longitude').notNullable().defaultTo('');
+            table.integer('qty').unsigned().notNullable().defaultTo(1);
             table.boolean('is_active').notNullable().defaultTo(true);
             table.timestamp('created_at').defaultTo(knex.fn.now());
             table.timestamp('updated_at').defaultTo(knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
@@ -47,5 +49,8 @@ export async function up(knex) {
  * @returns { Promise<void> }
  */
 export async function down(knex) {
-    return knex.schema.dropTable('assets');
+    return knex.schema
+        .dropTableIfExists('assets')
+        .dropTableIfExists('image_file_extensions')
+        .dropTableIfExists('video_file_extensions');
 }
