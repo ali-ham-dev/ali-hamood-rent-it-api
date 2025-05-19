@@ -6,7 +6,7 @@ const kenx = initKnex(configuration);
 
 const getAssets = async (req, res) => {
     try {
-        const assets = await kenx('assetss')
+        const assets = await kenx('assets')
             .where('id', req.params.assetsId)
             .select('*');
         

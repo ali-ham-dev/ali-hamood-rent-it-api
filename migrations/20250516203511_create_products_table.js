@@ -4,13 +4,13 @@
  */
 export async function up(knex) {
 
-    const tableExists = await knex.schema.hasTable('products');
+    const tableExists = await knex.schema.hasTable('assets');
     if (tableExists) {
-        await knex.schema.dropTable('products');
+        await knex.schema.dropTable('assets');
     }
 
     return knex.schema
-        .createTable('products', (table) => {
+        .createTable('assets', (table) => {
             table.increments('id').primary();
             table.text('media').notNullable().defaultTo('');
             table.string('title').notNullable().defaultTo('');
@@ -47,5 +47,5 @@ export async function up(knex) {
  * @returns { Promise<void> }
  */
 export async function down(knex) {
-    return knex.schema.dropTable('products');
+    return knex.schema.dropTable('assets');
 }
