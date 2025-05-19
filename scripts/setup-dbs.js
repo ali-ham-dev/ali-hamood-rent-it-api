@@ -25,8 +25,10 @@ async function setupDatabase() {
 
         console.log('Connected to MySQL server');
 
-        await connection.query(`CREATE DATABASE IF NOT EXISTS ${DB_NAME}`);
-        console.log(`Database '${DB_NAME}' created or already exists`);
+        await connection.query(`DROP DATABASE IF EXISTS ${DB_NAME}`);
+        console.log(`Database '${DB_NAME}' droped or doesn't exist.`);
+        await connection.query(`CREATE DATABASE ${DB_NAME}`);
+        console.log(`Database '${DB_NAME}' created.`);
 
         await connection.query(`USE ${DB_NAME}`);
         console.log(`Using database '${DB_NAME}'`);
