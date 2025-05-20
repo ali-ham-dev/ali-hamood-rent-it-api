@@ -30,9 +30,6 @@ const getAsset = async (req, res) => {
         const asset = await kenx('assets')
             .where('id', req.params.assetsId)
             .select('*');
-
-        console.log('asset');
-        console.log(asset);
         
         if (!asset.length) {
             return res.status(404).json({
