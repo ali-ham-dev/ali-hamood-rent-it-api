@@ -15,7 +15,7 @@ const getAssets = async (req, res) => {
             });
         }
 
-        res.status(200).json(assets[0]);
+        res.status(200).json(assets);
     } catch (error) {
         logError(error, `Error retrieving assets`);
 
