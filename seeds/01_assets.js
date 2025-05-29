@@ -21,7 +21,9 @@ export async function seed(knex) {
                     `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-4.png`,
                     `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-5.png`,
                     `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-6.png`,
-                    `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-7.png`
+                    `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-7.png`,
+                    `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-8.mov`,
+                    `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}/assets/images/products/product-1/uav-9.mov`
                 ],
                 "videos": []
             },
