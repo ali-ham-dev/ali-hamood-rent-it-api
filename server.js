@@ -1,26 +1,39 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-// import routers from ./routes...
+import { requestLogger } from './utils/logger.js';
+import v1Router from './routes/api/v1/index.js';
 
+// Import routers
+// import productRouter from './routes/product-routes.js';
+
+// Load environment variables
 dotenv.config();
-const PORT = process.env.PORT || 8085;
-const IP = process.env.IP || '0.0.0.0';
+const SERVER_PORT = process.env.SERVER_PORT || 9095;
+const SERVER_HOST = process.env.SERVER_HOST || '0.0.0.0';
 const app = express();
 
 // Initialize middleware
 app.use(cors());
 app.use(express.json());
 
+
 // log all requests
 app.use((req, res, next) => {
-  console.log('Incoming request:', req.method, req.url);
+  requestLogger(req);
   next();
 });
 
-// app.use('/warehouse, imported rout)
+// Routers
+app.use(express.static('public'));
+app.use('/api/v1', v1Router);
+// app.use('/products', productRouter);
+// app.use('/file-extensions', fileExtensionsRouter);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on ${IP}:${PORT}`);
+// Start the server
+app.listen(SERVER_PORT, SERVER_HOST, () => {
+    console.log(`Server is running on ${SERVER_HOST}:${SERVER_PORT}`);
     console.log('Press CTRL + C to stop the server');
-})
+}).on('error', (error) => {
+  console.error('Error starting server:', error);
+});
