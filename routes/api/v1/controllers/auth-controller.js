@@ -6,26 +6,182 @@ import { sendVerificationEmail } from '../../../../utils/email.js';
 import { logError } from '../../../../utils/logger.js';
 import authModel from '../model/auth-model.js';
 
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const NAME_REGEX = /^(?!.*\s{2})[A-Za-z\s-]+$/;    
+const PHONE_REGEX = /\D/g;
+
+const validateName = (name) => {
+    if (!name) {
+        return {
+            valid: false,
+            error: 'Name error',
+            name: null
+        }
+    }
+
+    if (name > 2 || name < 50 ||
+        !NAME_REGEX.test(name)
+    ) {
+        return {
+            valid: false,
+            error: 'Name error',
+            name: null
+        }
+    }
+
+    return {
+        valid: true,
+        error: null,
+        name: name
+    }
+}
+
+const validateEmail = (email) => {
+    if (!email) {
+        return {
+            valid: false,
+            error: 'Email error',
+            email: null
+        }
+    }
+
+    if (email > 254 || !EMAIL_REGEX.test(email)) {
+        return {
+            valid: false,
+            error: 'Email error',
+            email: null
+        }
+    }
+    
+    return {
+        valid: true,
+        error: null,
+        email: email
+    }
+}
+
+const validatePhone = (phone) => {
+    if (!phone) {
+        return {
+            valid: false,
+            error: 'Phone error',
+            phone: null
+        }
+    }
+
+    const numberOnlyPhone = phone.replace(PHONE_REGEX, '');
+
+    if (numberOnlyPhone.length < 10 || numberOnlyPhone.length > 15) {
+        return {
+            valid: false,
+            error: 'Phone error',
+            phone: null
+        }
+    }
+
+    return {
+        valid: true,
+        error: null,
+        phone: numberOnlyPhone
+    }
+}
+
+const validatePassword = (password) => {
+    if (!password) {
+        return {
+            valid: false,
+            error: 'Password error',
+            password: null
+        }
+    }
+
+    if (password.length < 8 || password.length > 128) {
+        return {
+            valid: false,
+            error: 'Password error',
+            password: null
+        }
+    }
+
+    return {
+        valid: true,
+        error: null,
+        password: password
+    }
+}
+
+const validateSignup = async (data) => {
+    const { firstName, lastName, email, phone, password } = data;
+
+    const nameValidation = validateName(firstName);
+    const lastNameValidation = validateName(lastName);
+    if (!nameValidation.valid || !lastNameValidation.valid) {
+        return {
+            valid: false,
+            error: nameValidation.error || lastNameValidation.error
+        }
+    }
+
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+        return {
+            valid: false,
+            error: emailValidation.error
+        }
+    }
+
+    const phoneValidation = validatePhone(phone);
+    if (!phoneValidation.valid) {
+        return {
+            valid: false,
+            error: phoneValidation.error
+        }
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+        return {
+            valid: false,
+            error: passwordValidation.error
+        }
+    }
+
+    return {
+        valid: true,
+        error: null,
+        firstName: nameValidation.name,
+        lastName: lastNameValidation.name,
+        email: emailValidation.email,
+        phone: phoneValidation.phone,
+        password: passwordValidation.password
+    }
+}
+    
+
 const signup = async (req, res) => {
     try {
-        const { firstName, lastName, email, phone, password } = req.body;
+        const isValid = await validateSignup(req.body);
+        
+        if (!isValid.valid) {
+            return res.status(400).json({ error: isValid.error });
+        }
 
         const existingUser = await knex('users')
-            .where({ email })
+            .where({ email: isValid.email })
             .first();
         if (existingUser) {
             return res.status(422).json({ error: 'Email already registered' });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(isValid.password, 10);
         const { token: verificationToken, expires: verificationTokenExpires } = 
-            await authModel.sendVerificationEmail(email, 60 * 1000); 
+            await authModel.sendVerificationEmail(isValid.email, 5 * 60 * 1000); 
         
         const userId = await knex('users').insert({
-            firstName,
-            lastName,
-            email,
-            phone,
+            firstName: isValid.firstName,
+            lastName: isValid.lastName,
+            email: isValid.email,
+            phone: isValid.phone,
             password: hashedPassword,
             emailVerificationToken: verificationToken,
             emailVerificationTokenExpires: verificationTokenExpires,

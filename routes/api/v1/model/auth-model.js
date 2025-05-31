@@ -24,7 +24,23 @@ class AuthModel {
         });
     }
 
-    // Email verification methods
+    formatDuration(milliseconds) {
+        const seconds = Math.floor(milliseconds / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) {
+            return `${days} ${days === 1 ? 'day' : 'days'}`;
+        } else if (hours > 0) {
+            return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+        } else if (minutes > 0) {
+            return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+        } else {
+            return `${seconds} ${seconds === 1 ? 'second' : 'seconds'}`;
+        }
+    }
+
     async sendVerificationEmail(email, duration) {
 
         const token = Math.floor(100000 + Math.random() * 900000).toString();
@@ -54,7 +70,7 @@ class AuthModel {
 
                     <div style="color: #7f8c8d; font-size: 14px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
                         <p>If you did not create an account with Rent It, you can safely ignore this email.</p>
-                        <p>This verification link will expire in 24 hours.</p>
+                        <p>This verification link will expire in ${formattedDuration}.</p>
                     </div>
                 </div>
             `
@@ -64,8 +80,7 @@ class AuthModel {
             await this.transporter.sendMail(mailOptions);
             return { token, expires: new Date(Date.now() + duration) };
         } catch (error) {
-            console.error('Error sending verification email:', error);
-            throw new Error('Failed to send verification email');
+            logError(error, 'sendVerificationEmail');
         }
     }
 
