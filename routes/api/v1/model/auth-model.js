@@ -14,6 +14,9 @@ class AuthModel {
         this.PHONE_REGEX = /\D/g;
         this.TOKEN_REGEX = /\D/g;
         this.UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        this.JWT_PUBLIC_KEY = process.env.JWT_PUBLIC_KEY;
+        this.JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
+        this.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
 
         // Create SES client
         const sesClient = new SESClient({
@@ -89,6 +92,17 @@ class AuthModel {
         } catch (error) {
             logError(error, 'sendVerificationEmail');
         }
+    }
+
+    jwtToken = (userId, email) => {
+        return jwt.sign(
+            { userId: userId, email: email },
+            this.JWT_PRIVATE_KEY,
+            { 
+                algorithm: 'RS256',
+                expiresIn: this.JWT_EXPIRES_IN
+            }
+        );
     }
 
     validateName = (name) => {

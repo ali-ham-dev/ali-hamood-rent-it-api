@@ -32,7 +32,7 @@ const signup = async (req, res) => {
             email: isValid.email,
             phone: isValid.phone,
             password: hashedPassword,
-            emailVerification: true,
+            verificationRequested: true,
             emailVerificationToken: verificationToken,
             emailVerificationTokenExpires: verificationTokenExpires,
             createdAt: new Date(),
@@ -50,44 +50,53 @@ const signup = async (req, res) => {
     }
 };
 
-const login = async (req, res) => {
+const loginWithPassword = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Find user
+        const isValidEmail = authModel.validateEmail(email);
+        if (!isValidEmail.valid) {
+            return res.status(400).json({ error: isValidEmail.error });
+        }
+
+        const isValidPassword = authModel.validatePassword(password);
+        if (!isValidPassword.valid) {
+            return res.status(400).json({ error: isValidPassword.error });
+        }
+
         const user = await knex('users')
-            .where({ email })
+            .select('id',
+                    'firstName', 
+                    'lastName', 
+                    'email', 
+                    'password', 
+                    'verificationRequested', 
+                    'emailVerificationTokenExpires')
+            .where({ email: isValidEmail.email })
             .first();
 
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        // Check if email is verified
-        if (!user.emailVerified) {
-            return res.status(403).json({ error: 'Please verify your email before logging in' });
-        }
-
-        // Check password
-        const isValidPassword = await bcrypt.compare(password, user.password);
-        if (!isValidPassword) {
+        if (user.password !== isValidPassword.password) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        // Generate JWT token
-        const token = jwt.sign(
-            { userId: user.id, email: user.email },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
+        if (user.verificationRequested === true) {
+            return res.status(403).json({ 
+                message: 'Please verify your email before logging in',
+                verificationTokenExpires: user.emailVerificationTokenExpires 
+            });
+        }
 
-        // Update last login
         await knex('users')
             .where({ id: user.id })
             .update({ lastLogin: new Date() });
-
-        res.json({
-            token,
+        
+        const jwtToken = authModel.jwtToken(user.id, user.email);
+        res.status(200).json({
+            token: jwtToken,
             user: {
                 id: user.id,
                 firstName: user.firstName,
@@ -97,7 +106,57 @@ const login = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Login error:', error);
+        logError(error, 'loginWithPassword');
+        res.status(500).json({ error: 'Error during login' });
+    }
+};
+
+const loginWithEmailToken = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const isValidEmail = authModel.validateEmail(email);
+        if (!isValidEmail.valid) {
+            return res.status(400).json({ error: isValidEmail.error });
+        }
+
+        const user = await knex('users')
+            .select('id',
+                    'firstName', 
+                    'lastName', 
+                    'email', 
+                    'password', 
+                    'verificationRequested', 
+                    'emailVerificationTokenExpires')
+            .where({ email: isValidEmail.email })
+            .first();
+
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        if (user.verificationRequested === true) {
+            return res.status(403).json({ 
+                message: 'Please verify your email before logging in',
+                verificationTokenExpires: user.emailVerificationTokenExpires 
+            });
+        }
+
+        const { token: verificationToken, expires: verificationTokenExpires } = 
+            await authModel.sendVerificationEmail(email, 5 * 60 * 1000);
+
+        await knex('users')
+            .where({ id: user.id })
+            .update({
+                emailVerificationToken: verificationToken,
+                emailVerificationTokenExpires: verificationTokenExpires,
+                verificationRequested: true,
+                updatedAt: new Date()
+            });
+
+        res.status(200).json({ message: 'Verification email sent successfully' });
+    } catch (error) {
+        logError(error, 'loginWithPassword');
         res.status(500).json({ error: 'Error during login' });
     }
 };
@@ -117,18 +176,31 @@ const verifyEmailToken = async (req, res) => {
         }
 
         const user = await knex('users')
-            .select('id', 'emailVerificationToken', 'emailVerificationTokenExpires', 'emailVerification')
-            .where({
-                id: isValidUserId.userId
-            })
+            .select('id', 
+                    'firstName', 
+                    'lastName', 
+                    'email', 
+                    'phone', 
+                    'emailVerificationToken', 
+                    'emailVerificationTokenExpires', 
+                    'verificationRequested')
+            .where({ id: isValidUserId.userId })
             .first();
 
-        if (!user || !user.emailVerificationToken || !user.emailVerificationTokenExpires) {
-            return res.status(400).json({ error: 'Invalid user ID.' });
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid credentials' });
+        }
+
+        if (user.verificationRequested === false) {
+            return res.status(400).json({ error: 'User already verified' });
         }
 
         if (user.emailVerificationTokenExpires < new Date()) {
-            return res.status(400).json({ error: 'Verification token has expired' });
+            return res.status(400).json({ verificationTokenExpires: verificationTokenExpires });
+        }
+
+        if (user.emailVerificationToken !== token) {
+            return res.status(400).json({ error: 'Invalid token' });
         }
 
         await knex('users')
@@ -136,11 +208,22 @@ const verifyEmailToken = async (req, res) => {
             .update({
                 emailVerificationToken: "",
                 emailVerificationTokenExpires: new Date(),
-                emailVerification: false,
+                verificationRequested: false,
                 updatedAt: new Date()
             });
 
-        res.status(200).json({ message: 'Token verified successfully' });
+        const jwtToken = authModel.jwtToken(user.id, user.email);
+        res.status(200).json({ 
+            token: jwtToken,
+            message: 'Token verified successfully',
+            user: {
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                phone: user.phone
+            }
+        });
     } catch (error) {
         logError(error, 'verifyEmailToken');
         res.status(500).json({ error: 'Error verifying email' });
@@ -156,7 +239,7 @@ const resendVerificationToken = async (req, res) => {
         }
 
         const user = await knex('users')
-            .select('id', 'email', 'emailVerification', 'emailVerificationToken', 'emailVerificationTokenExpires')
+            .select('id', 'email', 'verificationRequested', 'emailVerificationToken', 'emailVerificationTokenExpires')
             .where({ id: isValidUserId.userId })
             .first();
 
@@ -164,8 +247,12 @@ const resendVerificationToken = async (req, res) => {
             return res.status(404).json({ error: 'User not found or already verified' });
         }
 
-        if (!user.emailVerification) {
+        if (user.verificationRequested === false) {
             return res.status(400).json({ error: 'User already verified' });
+        }
+
+        if (user.emailVerificationTokenExpires > new Date()) {
+            return res.status(400).json({ error: 'Verification token has not expired' });
         }
 
         const { token: verificationToken, expires: verificationTokenExpires } = 
@@ -176,7 +263,7 @@ const resendVerificationToken = async (req, res) => {
             .update({
                 emailVerificationToken: verificationToken,
                 emailVerificationTokenExpires: verificationTokenExpires,
-                emailVerification: true,
+                verificationRequested: true,
                 updatedAt: new Date()
             });
 
@@ -189,7 +276,8 @@ const resendVerificationToken = async (req, res) => {
 
 export {
     signup, 
-    login,
+    loginWithPassword,
+    loginWithEmailToken,
     verifyEmailToken,
     resendVerificationToken
 }
