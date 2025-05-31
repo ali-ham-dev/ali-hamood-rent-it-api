@@ -19,6 +19,7 @@ export async function seed(knex) {
             "email": "alihamood96@gmail.com",
             "phone": "1234567890",
             "password": hashedPassword,
+            "verificationRequested": false,
             "createdAt": new Date(),
             "updatedAt": new Date(),
             "lastLogin": new Date()
@@ -29,6 +30,7 @@ export async function seed(knex) {
             "email": "test@example.com",
             "phone": "9876543210",
             "password": hashedPassword,
+            "verificationRequested": false,
             "createdAt": new Date(),
             "updatedAt": new Date(),
             "lastLogin": new Date()

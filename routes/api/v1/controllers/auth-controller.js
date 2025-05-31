@@ -6,7 +6,6 @@ import { sendVerificationEmail } from '../../../../utils/email.js';
 import { logError } from '../../../../utils/logger.js';
 import authModel from '../model/auth-model.js';
 
-    
 
 const signup = async (req, res) => {
     try {
@@ -33,6 +32,7 @@ const signup = async (req, res) => {
             email: isValid.email,
             phone: isValid.phone,
             password: hashedPassword,
+            emailVerification: true,
             emailVerificationToken: verificationToken,
             emailVerificationTokenExpires: verificationTokenExpires,
             createdAt: new Date(),
@@ -117,7 +117,7 @@ const verifyEmailToken = async (req, res) => {
         }
 
         const user = await knex('users')
-            .select('id', 'emailVerificationToken', 'emailVerificationTokenExpires', 'emailVerified')
+            .select('id', 'emailVerificationToken', 'emailVerificationTokenExpires', 'emailVerification')
             .where({
                 id: isValidUserId.userId
             })
@@ -136,10 +136,11 @@ const verifyEmailToken = async (req, res) => {
             .update({
                 emailVerificationToken: "",
                 emailVerificationTokenExpires: new Date(),
+                emailVerification: false,
                 updatedAt: new Date()
             });
 
-        res.status(200).json({ message: 'Email verified successfully' });
+        res.status(200).json({ message: 'Token verified successfully' });
     } catch (error) {
         logError(error, 'verifyEmailToken');
         res.status(500).json({ error: 'Error verifying email' });
@@ -148,32 +149,40 @@ const verifyEmailToken = async (req, res) => {
 
 const resendVerificationToken = async (req, res) => {
     try {
-        const { email } = req.body;
+        const { userId } = req.params;
+        const isValidUserId = authModel.validateUserId(userId);
+        if (!isValidUserId.valid) {
+            return res.status(400).json({ error: isValidUserId.error });
+        }
 
         const user = await knex('users')
-            .where({ email, emailVerified: false })
+            .select('id', 'email', 'emailVerification', 'emailVerificationToken', 'emailVerificationTokenExpires')
+            .where({ id: isValidUserId.userId })
             .first();
 
         if (!user) {
             return res.status(404).json({ error: 'User not found or already verified' });
         }
 
-        // Get new verification code and expiration from AuthModel
-        const { token: verificationToken, expires: verificationTokenExpires } = 
-            await authModel.sendVerificationEmail(email, 60 * 1000); // 60 seconds in milliseconds
+        if (!user.emailVerification) {
+            return res.status(400).json({ error: 'User already verified' });
+        }
 
-        // Update user with new token
+        const { token: verificationToken, expires: verificationTokenExpires } = 
+            await authModel.sendVerificationEmail(email, 5 * 60 * 1000);
+
         await knex('users')
             .where({ id: user.id })
             .update({
                 emailVerificationToken: verificationToken,
                 emailVerificationTokenExpires: verificationTokenExpires,
+                emailVerification: true,
                 updatedAt: new Date()
             });
 
-        res.json({ message: 'Verification email sent successfully' });
+        res.status(200).json({ message: 'Verification email sent successfully' });
     } catch (error) {
-        console.error('Resend verification email error:', error);
+        logError(error, 'resendVerificationToken');
         res.status(500).json({ error: 'Error sending verification email' });
     }
 }; 

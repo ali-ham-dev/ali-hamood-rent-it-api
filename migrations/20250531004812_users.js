@@ -11,8 +11,9 @@ export async function up(knex) {
             table.string('email').notNullable().unique();
             table.string('phone').notNullable();
             table.string('password').notNullable();
-            table.string('emailVerificationToken').nullable();
-            table.timestamp('emailVerificationTokenExpires').nullable();
+            table.boolean('verificationRequested').defaultTo(false);
+            table.string('emailVerificationToken').nullable().defaultTo('');
+            table.timestamp('emailVerificationTokenExpires').nullable().defaultTo(knex.fn.now());
             table.string('passwordResetToken').nullable();
             table.timestamp('passwordResetTokenExpires').nullable();
             table.timestamp('createdAt').defaultTo(knex.fn.now());
