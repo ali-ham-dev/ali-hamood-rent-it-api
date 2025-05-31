@@ -6,15 +6,21 @@ export async function up(knex) {
     return knex.schema
         .createTable('users', (table) => {
             table.increments('id').primary();
-            table.string('firstName').notNullable().defaultTo('');
-            table.string('lastName').notNullable().defaultTo('');
-            table.string('email').notNullable().defaultTo('');
-            table.string('phone').notNullable().defaultTo('');
-            table.string('password').notNullable().defaultTo('');
-            table.timestamp('createdAt').defaultTo(knex.fn.now());
-            table.timestamp('lastLogin').defaultTo(knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
+            table.string('firstName').notNullable();
+            table.string('lastName').notNullable();
+            table.string('email').notNullable().unique();
+            table.string('phone').notNullable();
+            table.string('password').notNullable();
+            table.boolean('emailVerified').notNullable().defaultTo(false);
+            table.string('emailVerificationToken').nullable();
+            table.timestamp('emailVerificationTokenExpires').nullable();
+            table.string('passwordResetToken').nullable();
+            table.timestamp('passwordResetTokenExpires').nullable();
             table.boolean('isActive').notNullable().defaultTo(true);
-        })
+            table.timestamp('createdAt').defaultTo(knex.fn.now());
+            table.timestamp('updatedAt').defaultTo(knex.fn.now());
+            table.timestamp('lastLogin').nullable();
+        });
 }
 
 /**
