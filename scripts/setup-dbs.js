@@ -23,6 +23,14 @@ async function setupDatabase() {
             password: DB_PASSWORD
         });
 
+        console.log('');
+        console.log('--------------------------------');
+        console.log('npm install knex mysql2 dotenv');
+        console.log('npx knex init');
+        console.log('Packages for auth: npm install jsonwebtoken bcryptjs');
+        console.log('--------------------------------');
+        console.log('');
+
         console.log('Connected to MySQL server');
 
         await connection.query(`DROP DATABASE IF EXISTS ${DB_NAME}`);
@@ -37,6 +45,7 @@ async function setupDatabase() {
         console.log('Initial connection closed');
         console.log('Create a migration: npx knex migrate:make <migration_file_name>');
         console.log('Run migrations: npx knex migrate:latest');
+        console.log('Run seeds: npx knex seed:make <seed_file_name>');
         console.log('Run seeds: npx knex seed:run');
         console.log('End of setup');
 
