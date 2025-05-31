@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { requestLogger } from './utils/logger.js';
 import v1Router from './routes/api/v1/index.js';
 
@@ -12,10 +13,46 @@ const SERVER_HOST = process.env.SERVER_HOST || '0.0.0.0';
 const FRONT_END_URL = process.env.FRONT_END_URL || 'http://localhost:3000';
 const app = express();
 
-// Initialize middleware
-app.use(helmet({
+const rateLimitWindowMs = 15 * 60 * 1000;
+const rateLimitLimit = 100;
+const rateLimitMessage = 'Too many requests, please try again later.';
 
+// Rate limiting middleware
+app.use(rateLimit({
+  windowMs: rateLimitWindowMs,
+  limit: rateLimitLimit,
+  message: rateLimitMessage
 }));
+
+// Helmet middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+      directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'", FRONT_END_URL]
+      }
+  },
+  crossOriginEmbedderPolicy: true,
+  crossOriginOpenerPolicy: true,
+  crossOriginResourcePolicy: { policy: "same-site" },
+  dnsPrefetchControl: true,
+  frameguard: { action: "deny" },
+  hidePoweredBy: true,
+  hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true
+  },
+  ieNoOpen: true,
+  noSniff: true,
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  xssFilter: true
+}));
+
+// CORS middleware
 app.use(cors({
   origin: FRONT_END_URL,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -23,23 +60,29 @@ app.use(cors({
   credentials: true,
   maxAge: 86400
 }));
+
+// Parse JSON bodies
 app.use(express.json({ limit: '10kb' }));
+
+// Parse URL-encoded bodies
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-
-// log all requests
+// Log all requests
 app.use((req, res, next) => {
   requestLogger(req);
   next();
 });
 
-// Routers
+// Serve static files
 app.use(express.static('public', {
   maxAge: '1d',
   etag: true
 }));
+
+// API routes
 app.use('/api/v1', v1Router);
 
+// Error handling middleware
 app.use((err, req, res, next) => {
   logger.error('Error in app:', err);
   res.status(err.status || 500).json({
