@@ -18,6 +18,34 @@ class AuthModel {
         this.JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
         this.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
 
+        // Add error messages
+        this.ERROR_MESSAGES = {
+            NAME_REQUIRED: 'Name is required',
+            NAME_INVALID: 'Name must be between 2 and 50 characters and contain only letters, spaces, and hyphens',
+            EMAIL_REQUIRED: 'Email is required',
+            EMAIL_INVALID: 'Email must be a valid email address',
+            PHONE_REQUIRED: 'Phone number is required',
+            PHONE_INVALID: 'Phone number must be between 10 and 15 digits',
+            PASSWORD_REQUIRED: 'Password is required',
+            PASSWORD_INVALID: 'Password must be between 8 and 128 characters',
+            TOKEN_REQUIRED: 'Token is required',
+            TOKEN_INVALID: 'Token must be 6 digits',
+            USER_ID_REQUIRED: 'User ID is required',
+            USER_ID_INVALID: 'User ID must be a valid UUID'
+        };
+
+        // Add validation rules
+        this.VALIDATION_RULES = {
+            NAME_MIN_LENGTH: 2,
+            NAME_MAX_LENGTH: 50,
+            EMAIL_MAX_LENGTH: 254,
+            PHONE_MIN_LENGTH: 10,
+            PHONE_MAX_LENGTH: 15,
+            PASSWORD_MIN_LENGTH: 8,
+            PASSWORD_MAX_LENGTH: 128,
+            TOKEN_LENGTH: 6
+        };
+
         // Create SES client
         const sesClient = new SESClient({
             region: process.env.AWS_REGION,
@@ -109,17 +137,18 @@ class AuthModel {
         if (!name) {
             return {
                 valid: false,
-                error: 'Name error',
+                error: this.ERROR_MESSAGES.NAME_REQUIRED,
                 name: null
             }
         }
     
-        if (name > 2 || name < 50 ||
-            !NAME_REGEX.test(name)
+        if (name.length < this.VALIDATION_RULES.NAME_MIN_LENGTH ||
+            name.length > this.VALIDATION_RULES.NAME_MAX_LENGTH ||
+            !this.NAME_REGEX.test(name)
         ) {
             return {
                 valid: false,
-                error: 'Name error',
+                error: this.ERROR_MESSAGES.NAME_INVALID,
                 name: null
             }
         }
@@ -135,15 +164,17 @@ class AuthModel {
         if (!email) {
             return {
                 valid: false,
-                error: 'Email error',
+                error: this.ERROR_MESSAGES.EMAIL_REQUIRED,
                 email: null
             }
         }
     
-        if (email > 254 || !EMAIL_REGEX.test(email)) {
+        if (email.length > this.VALIDATION_RULES.EMAIL_MAX_LENGTH ||
+            !this.EMAIL_REGEX.test(email)
+        ) {
             return {
                 valid: false,
-                error: 'Email error',
+                error: this.ERROR_MESSAGES.EMAIL_INVALID,
                 email: null
             }
         }
@@ -159,17 +190,19 @@ class AuthModel {
         if (!phone) {
             return {
                 valid: false,
-                error: 'Phone error',
+                error: this.ERROR_MESSAGES.PHONE_REQUIRED,
                 phone: null
             }
         }
     
         const numberOnlyPhone = phone.replace(PHONE_REGEX, '');
     
-        if (numberOnlyPhone.length < 10 || numberOnlyPhone.length > 15) {
+        if (numberOnlyPhone.length < this.VALIDATION_RULES.PHONE_MIN_LENGTH ||
+            numberOnlyPhone.length > this.VALIDATION_RULES.PHONE_MAX_LENGTH
+        ) {
             return {
                 valid: false,
-                error: 'Phone error',
+                error: this.ERROR_MESSAGES.PHONE_INVALID,
                 phone: null
             }
         }
@@ -185,15 +218,17 @@ class AuthModel {
         if (!password) {
             return {
                 valid: false,
-                error: 'Password error',
+                error: this.ERROR_MESSAGES.PASSWORD_REQUIRED,
                 password: null
             }
         }
     
-        if (password.length < 8 || password.length > 128) {
+        if (password.length < this.VALIDATION_RULES.PASSWORD_MIN_LENGTH ||
+            password.length > this.VALIDATION_RULES.PASSWORD_MAX_LENGTH
+        ) {
             return {
                 valid: false,
-                error: 'Password error',
+                error: this.ERROR_MESSAGES.PASSWORD_INVALID,
                 password: null
             }
         }
@@ -209,17 +244,17 @@ class AuthModel {
         if (!token) {
             return {
                 valid: false,
-                error: 'Token error',
+                error: this.ERROR_MESSAGES.TOKEN_REQUIRED,
                 token: null
             }
         }
     
         const tokenOnlyNumbers = token.replace(TOKEN_REGEX, '');
     
-        if (tokenOnlyNumbers.length !== 6) {
+        if (tokenOnlyNumbers.length !== this.VALIDATION_RULES.TOKEN_LENGTH) {
             return {
                 valid: false,
-                error: 'Token error',
+                error: this.ERROR_MESSAGES.TOKEN_INVALID,
                 token: null
             }
         }
@@ -235,15 +270,15 @@ class AuthModel {
         if (!userId) {
             return {
                 valid: false,
-                error: 'User ID error',
+                error: this.ERROR_MESSAGES.USER_ID_REQUIRED,
                 userId: null
             }
         }
     
-        if (!UUID_REGEX.test(userId)) {
+        if (!this.UUID_REGEX.test(userId)) {
             return {
                 valid: false,
-                error: 'User ID error',
+                error: this.ERROR_MESSAGES.USER_ID_INVALID,
                 userId: null
             }
         }
