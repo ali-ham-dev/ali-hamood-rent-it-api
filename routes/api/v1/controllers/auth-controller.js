@@ -6,161 +6,11 @@ import { sendVerificationEmail } from '../../../../utils/email.js';
 import { logError } from '../../../../utils/logger.js';
 import authModel from '../model/auth-model.js';
 
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-const NAME_REGEX = /^(?!.*\s{2})[A-Za-z\s-]+$/;    
-const PHONE_REGEX = /\D/g;
-
-const validateName = (name) => {
-    if (!name) {
-        return {
-            valid: false,
-            error: 'Name error',
-            name: null
-        }
-    }
-
-    if (name > 2 || name < 50 ||
-        !NAME_REGEX.test(name)
-    ) {
-        return {
-            valid: false,
-            error: 'Name error',
-            name: null
-        }
-    }
-
-    return {
-        valid: true,
-        error: null,
-        name: name
-    }
-}
-
-const validateEmail = (email) => {
-    if (!email) {
-        return {
-            valid: false,
-            error: 'Email error',
-            email: null
-        }
-    }
-
-    if (email > 254 || !EMAIL_REGEX.test(email)) {
-        return {
-            valid: false,
-            error: 'Email error',
-            email: null
-        }
-    }
-    
-    return {
-        valid: true,
-        error: null,
-        email: email
-    }
-}
-
-const validatePhone = (phone) => {
-    if (!phone) {
-        return {
-            valid: false,
-            error: 'Phone error',
-            phone: null
-        }
-    }
-
-    const numberOnlyPhone = phone.replace(PHONE_REGEX, '');
-
-    if (numberOnlyPhone.length < 10 || numberOnlyPhone.length > 15) {
-        return {
-            valid: false,
-            error: 'Phone error',
-            phone: null
-        }
-    }
-
-    return {
-        valid: true,
-        error: null,
-        phone: numberOnlyPhone
-    }
-}
-
-const validatePassword = (password) => {
-    if (!password) {
-        return {
-            valid: false,
-            error: 'Password error',
-            password: null
-        }
-    }
-
-    if (password.length < 8 || password.length > 128) {
-        return {
-            valid: false,
-            error: 'Password error',
-            password: null
-        }
-    }
-
-    return {
-        valid: true,
-        error: null,
-        password: password
-    }
-}
-
-const validateSignup = async (data) => {
-    const { firstName, lastName, email, phone, password } = data;
-
-    const nameValidation = validateName(firstName);
-    const lastNameValidation = validateName(lastName);
-    if (!nameValidation.valid || !lastNameValidation.valid) {
-        return {
-            valid: false,
-            error: nameValidation.error || lastNameValidation.error
-        }
-    }
-
-    const emailValidation = validateEmail(email);
-    if (!emailValidation.valid) {
-        return {
-            valid: false,
-            error: emailValidation.error
-        }
-    }
-
-    const phoneValidation = validatePhone(phone);
-    if (!phoneValidation.valid) {
-        return {
-            valid: false,
-            error: phoneValidation.error
-        }
-    }
-
-    const passwordValidation = validatePassword(password);
-    if (!passwordValidation.valid) {
-        return {
-            valid: false,
-            error: passwordValidation.error
-        }
-    }
-
-    return {
-        valid: true,
-        error: null,
-        firstName: nameValidation.name,
-        lastName: lastNameValidation.name,
-        email: emailValidation.email,
-        phone: phoneValidation.phone,
-        password: passwordValidation.password
-    }
-}
     
 
 const signup = async (req, res) => {
     try {
-        const isValid = await validateSignup(req.body);
+        const isValid = authModel.validateSignup(req.body);
         
         if (!isValid.valid) {
             return res.status(400).json({ error: isValid.error });
@@ -191,7 +41,8 @@ const signup = async (req, res) => {
 
         res.status(201).json({
             message: 'User registered successfully. Please check your email to verify your account.',
-            userId: userId[0]
+            userId: userId[0],
+            verificationTokenExpires: verificationTokenExpires
         });
     } catch (error) {
         logError(error, 'signup');
@@ -251,43 +102,51 @@ const login = async (req, res) => {
     }
 };
 
-const verifyEmail = async (req, res) => {
+const verifyEmailToken = async (req, res) => {
     try {
-        const { token } = req.params;
+        const { userId, token } = req.params;
+
+        const isValidUserId = authModel.validateUserId(userId);
+        if (!isValidUserId.valid) {
+            return res.status(400).json({ error: isValidUserId.error });
+        }
+
+        const isValidToken = authModel.validateToken(token);
+        if (!isValidToken.valid) {
+            return res.status(400).json({ error: isValidToken.error });
+        }
 
         const user = await knex('users')
+            .select('id', 'emailVerificationToken', 'emailVerificationTokenExpires', 'emailVerified')
             .where({
-                emailVerificationToken: token,
-                emailVerified: false
+                id: isValidUserId.userId
             })
             .first();
 
-        if (!user) {
-            return res.status(400).json({ error: 'Invalid or expired verification token' });
+        if (!user || !user.emailVerificationToken || !user.emailVerificationTokenExpires) {
+            return res.status(400).json({ error: 'Invalid user ID.' });
         }
 
         if (user.emailVerificationTokenExpires < new Date()) {
             return res.status(400).json({ error: 'Verification token has expired' });
         }
 
-        // Update user
         await knex('users')
             .where({ id: user.id })
             .update({
-                emailVerified: true,
-                emailVerificationToken: null,
-                emailVerificationTokenExpires: null,
+                emailVerificationToken: "",
+                emailVerificationTokenExpires: new Date(),
                 updatedAt: new Date()
             });
 
-        res.json({ message: 'Email verified successfully' });
+        res.status(200).json({ message: 'Email verified successfully' });
     } catch (error) {
-        console.error('Email verification error:', error);
+        logError(error, 'verifyEmailToken');
         res.status(500).json({ error: 'Error verifying email' });
     }
 };
 
-const resendVerificationEmail = async (req, res) => {
+const resendVerificationToken = async (req, res) => {
     try {
         const { email } = req.body;
 
@@ -322,6 +181,6 @@ const resendVerificationEmail = async (req, res) => {
 export {
     signup, 
     login,
-    verifyEmail,
-    resendVerificationEmail
+    verifyEmailToken,
+    resendVerificationToken
 }

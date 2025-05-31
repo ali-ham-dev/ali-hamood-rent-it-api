@@ -11,12 +11,10 @@ export async function up(knex) {
             table.string('email').notNullable().unique();
             table.string('phone').notNullable();
             table.string('password').notNullable();
-            table.boolean('emailVerified').notNullable().defaultTo(false);
             table.string('emailVerificationToken').nullable();
             table.timestamp('emailVerificationTokenExpires').nullable();
             table.string('passwordResetToken').nullable();
             table.timestamp('passwordResetTokenExpires').nullable();
-            table.boolean('isActive').notNullable().defaultTo(true);
             table.timestamp('createdAt').defaultTo(knex.fn.now());
             table.timestamp('updatedAt').defaultTo(knex.fn.now());
             table.timestamp('lastLogin').nullable();

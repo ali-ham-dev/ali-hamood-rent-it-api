@@ -6,7 +6,7 @@ const authRouter = express.Router();
 authRouter
     .post('/signup', authController.signup)
     .post('/login', authController.login)
-    .get('/verify-email/:token', authController.verifyEmail)
-    .post('/resend-verification', authController.resendVerificationEmail);
+    .get('/verify-email-token/:userId/:token', authController.verifyEmailToken)
+    .post('/resend-verification-token', authController.resendVerificationToken);
 
 export default authRouter;

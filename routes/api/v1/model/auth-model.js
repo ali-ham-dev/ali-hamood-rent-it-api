@@ -7,7 +7,14 @@ import { SESClient } from '@aws-sdk/client-ses';
 import { createTransport } from 'nodemailer-ses-transport';
 
 class AuthModel {
+
     constructor() {
+        this.EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        this.NAME_REGEX = /^(?!.*\s{2})[A-Za-z\s-]+$/;    
+        this.PHONE_REGEX = /\D/g;
+        this.TOKEN_REGEX = /\D/g;
+        this.UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
         // Create SES client
         const sesClient = new SESClient({
             region: process.env.AWS_REGION,
@@ -84,192 +91,201 @@ class AuthModel {
         }
     }
 
-    // User registration methods
-    async createUser(userData) {
-        const { firstName, lastName, email, phone, password } = userData;
-
-        // Check if user exists
-        const existingUser = await knex('users')
-            .where({ email })
-            .first();
-        
-        if (existingUser) {
-            throw new Error('Email already registered');
-        }
-
-        // Generate verification token
-        const verificationToken = uuidv4();
-        const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Insert user
-        const [userId] = await knex('users').insert({
-            firstName,
-            lastName,
-            email,
-            phone,
-            password: hashedPassword,
-            emailVerificationToken: verificationToken,
-            emailVerificationTokenExpires: verificationTokenExpires,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        });
-
-        // Send verification email
-        await this.sendVerificationEmail(email, verificationToken);
-
-        return userId;
-    }
-
-    // Login methods
-    async loginUser(email, password) {
-        const user = await knex('users')
-            .where({ email })
-            .first();
-
-        if (!user) {
-            throw new Error('Invalid credentials');
-        }
-
-        if (!user.emailVerified) {
-            throw new Error('Please verify your email before logging in');
-        }
-
-        const isValidPassword = await bcrypt.compare(password, user.password);
-        if (!isValidPassword) {
-            throw new Error('Invalid credentials');
-        }
-
-        const token = jwt.sign(
-            { userId: user.id, email: user.email },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
-
-        // Update last login
-        await knex('users')
-            .where({ id: user.id })
-            .update({ lastLogin: new Date() });
-
-        return {
-            token,
-            user: {
-                id: user.id,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                email: user.email,
-                phone: user.phone
+    validateName = (name) => {
+        if (!name) {
+            return {
+                valid: false,
+                error: 'Name error',
+                name: null
             }
-        };
+        }
+    
+        if (name > 2 || name < 50 ||
+            !NAME_REGEX.test(name)
+        ) {
+            return {
+                valid: false,
+                error: 'Name error',
+                name: null
+            }
+        }
+    
+        return {
+            valid: true,
+            error: null,
+            name: name
+        }
+    }
+    
+    validateEmail = (email) => {
+        if (!email) {
+            return {
+                valid: false,
+                error: 'Email error',
+                email: null
+            }
+        }
+    
+        if (email > 254 || !EMAIL_REGEX.test(email)) {
+            return {
+                valid: false,
+                error: 'Email error',
+                email: null
+            }
+        }
+        
+        return {
+            valid: true,
+            error: null,
+            email: email
+        }
+    }
+    
+    validatePhone = (phone) => {
+        if (!phone) {
+            return {
+                valid: false,
+                error: 'Phone error',
+                phone: null
+            }
+        }
+    
+        const numberOnlyPhone = phone.replace(PHONE_REGEX, '');
+    
+        if (numberOnlyPhone.length < 10 || numberOnlyPhone.length > 15) {
+            return {
+                valid: false,
+                error: 'Phone error',
+                phone: null
+            }
+        }
+    
+        return {
+            valid: true,
+            error: null,
+            phone: numberOnlyPhone
+        }
+    }
+    
+    validatePassword = (password) => {
+        if (!password) {
+            return {
+                valid: false,
+                error: 'Password error',
+                password: null
+            }
+        }
+    
+        if (password.length < 8 || password.length > 128) {
+            return {
+                valid: false,
+                error: 'Password error',
+                password: null
+            }
+        }
+    
+        return {
+            valid: true,
+            error: null,
+            password: password
+        }
+    }
+    
+    validateToken = (token) => {
+        if (!token) {
+            return {
+                valid: false,
+                error: 'Token error',
+                token: null
+            }
+        }
+    
+        const tokenOnlyNumbers = token.replace(TOKEN_REGEX, '');
+    
+        if (tokenOnlyNumbers.length !== 6) {
+            return {
+                valid: false,
+                error: 'Token error',
+                token: null
+            }
+        }
+    
+        return {
+            valid: true,
+            error: null,
+            token: tokenOnlyNumbers
+        }
+    }
+    
+    validateUserId = (userId) => {
+        if (!userId) {
+            return {
+                valid: false,
+                error: 'User ID error',
+                userId: null
+            }
+        }
+    
+        if (!UUID_REGEX.test(userId)) {
+            return {
+                valid: false,
+                error: 'User ID error',
+                userId: null
+            }
+        }
+    
+        return {
+            valid: true,
+            error: null,
+            userId: userId
+        }
     }
 
-    // Email verification methods
-    async verifyEmail(token) {
-        const user = await knex('users')
-            .where({
-                emailVerificationToken: token,
-                emailVerified: false
-            })
-            .first();
-
-        if (!user) {
-            throw new Error('Invalid or expired verification token');
+    validateSignup = (data) => {
+        const { firstName, lastName, email, phone, password } = data;
+    
+        const nameValidation = validateName(firstName);
+        const lastNameValidation = validateName(lastName);
+        if (!nameValidation.valid || !lastNameValidation.valid) {
+            return {
+                valid: false,
+                error: nameValidation.error || lastNameValidation.error
+            }
         }
-
-        if (user.emailVerificationTokenExpires < new Date()) {
-            throw new Error('Verification token has expired');
+    
+        const emailValidation = validateEmail(email);
+        if (!emailValidation.valid) {
+            return {
+                valid: false,
+                error: emailValidation.error
+            }
         }
-
-        await knex('users')
-            .where({ id: user.id })
-            .update({
-                emailVerified: true,
-                emailVerificationToken: null,
-                emailVerificationTokenExpires: null,
-                updatedAt: new Date()
-            });
-
-        return true;
-    }
-
-    // Resend verification email
-    async resendVerificationEmail(email) {
-        const user = await knex('users')
-            .where({ email, emailVerified: false })
-            .first();
-
-        if (!user) {
-            throw new Error('User not found or already verified');
+    
+        const phoneValidation = validatePhone(phone);
+        if (!phoneValidation.valid) {
+            return {
+                valid: false,
+                error: phoneValidation.error
+            }
         }
-
-        const verificationToken = uuidv4();
-        const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-        await knex('users')
-            .where({ id: user.id })
-            .update({
-                emailVerificationToken: verificationToken,
-                emailVerificationTokenExpires: verificationTokenExpires,
-                updatedAt: new Date()
-            });
-
-        await this.sendVerificationEmail(email, verificationToken);
-        return true;
-    }
-
-    // Password reset methods
-    async initiatePasswordReset(email) {
-        const user = await knex('users')
-            .where({ email })
-            .first();
-
-        if (!user) {
-            throw new Error('User not found');
+    
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.valid) {
+            return {
+                valid: false,
+                error: passwordValidation.error
+            }
         }
-
-        const resetToken = uuidv4();
-        const resetTokenExpires = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
-
-        await knex('users')
-            .where({ id: user.id })
-            .update({
-                passwordResetToken: resetToken,
-                passwordResetExpires: resetTokenExpires,
-                updatedAt: new Date()
-            });
-
-        // TODO: Implement sendPasswordResetEmail method
-        // await this.sendPasswordResetEmail(email, resetToken);
-
-        return true;
-    }
-
-    async resetPassword(token, newPassword) {
-        const user = await knex('users')
-            .where({
-                passwordResetToken: token
-            })
-            .where('passwordResetExpires', '>', new Date())
-            .first();
-
-        if (!user) {
-            throw new Error('Invalid or expired reset token');
+    
+        return {
+            valid: true,
+            error: null,
+            firstName: nameValidation.name,
+            lastName: lastNameValidation.name,
+            email: emailValidation.email,
+            phone: phoneValidation.phone,
+            password: passwordValidation.password
         }
-
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        await knex('users')
-            .where({ id: user.id })
-            .update({
-                password: hashedPassword,
-                passwordResetToken: null,
-                passwordResetExpires: null,
-                updatedAt: new Date()
-            });
-
-        return true;
     }
 }
 
