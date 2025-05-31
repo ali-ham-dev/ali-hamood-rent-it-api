@@ -56,31 +56,28 @@ class AuthModel {
             VERIFY_EMAIL_DURATION: 15 * 60 * 1000
         };
 
-        // Create nodemailer transport using regular email service
-        this.transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD
-            }
-        });
+        if (process.env.SERVER_ENV === 'dev') {
+            this.transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASSWORD
+                }
+            });
+        } else {
+            const sesClient = new SESClient({
+                region: process.env.AWS_REGION,
+                credentials: {
+                    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+                    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+                }
+            });
 
-        // TODO: SES integration.
-        // SES setup (commented out for now)
-        /*
-        const sesClient = new SESClient({
-            region: process.env.AWS_REGION,
-            credentials: {
-                accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-            }
-        });
-
-        this.transporter = createTransport({
-            ses: sesClient,
-            aws: { ses: sesClient }
-        });
-        */
+            this.transporter = createTransport({
+                ses: sesClient,
+                aws: { ses: sesClient }
+            });
+        }
     }
 
     formatDuration(milliseconds) {

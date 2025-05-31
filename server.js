@@ -8,9 +8,10 @@ import v1Router from './routes/api/v1/index.js';
 
 // Load environment variables
 dotenv.config();
-const SERVER_PORT = process.env.SERVER_PORT || 9095;
-const SERVER_HOST = process.env.SERVER_HOST || '0.0.0.0';
-const FRONT_END_URL = process.env.FRONT_END_URL || 'http://localhost:3000';
+const SERVER_PORT = process.env.SERVER_PORT || 9090;
+const SERVER_HOST = process.env.SERVER_HOST || '127.0.0.1';
+const FRONT_END_URL = process.env.FRONT_END_URL || 'http://127.0.0.1:5173';
+const SERVER_ENV = process.env.SERVER_ENV || 'dev';
 const app = express();
 
 const rateLimitWindowMs = 15 * 60 * 1000;
@@ -21,11 +22,11 @@ const rateLimitMessage = 'Too many requests, please try again later.';
 app.use(rateLimit({
   windowMs: rateLimitWindowMs,
   limit: rateLimitLimit,
-  message: rateLimitMessage
+  message: rateLimitMessage,
+  skip: (req, res) => req.method === 'OPTIONS'
 }));
 
-// Helmet middleware
-app.use(helmet({
+const helmetOptionsProd = {
   contentSecurityPolicy: {
       directives: {
           defaultSrc: ["'self'"],
@@ -50,16 +51,37 @@ app.use(helmet({
   noSniff: true,
   referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   xssFilter: true
-}));
+}
 
-// CORS middleware
-app.use(cors({
-  origin: FRONT_END_URL,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  maxAge: 86400
-}));
+const helmetOptionsDev = {
+  contentSecurityPolicy: {
+      directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'", FRONT_END_URL]
+      }
+  },
+  crossOriginEmbedderPolicy: true,
+  crossOriginOpenerPolicy: true,
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  dnsPrefetchControl: true,
+  frameguard: { action: "deny" },
+  hidePoweredBy: true,
+  hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true
+  },
+  ieNoOpen: true,
+  noSniff: true,
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  xssFilter: true
+}
+
+// Helmet middleware
+app.use(helmet(SERVER_ENV === 'dev' ? helmetOptionsDev : helmetOptionsProd));
 
 // Parse JSON bodies
 app.use(express.json({ limit: '10kb' }));
