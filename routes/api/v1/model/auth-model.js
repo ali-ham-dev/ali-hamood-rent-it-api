@@ -46,6 +46,18 @@ class AuthModel {
             TOKEN_LENGTH: 6
         };
 
+        this.RATE_LIMIT_RULES = {
+            LOGIN_LIMIT: 10,
+            SIGNUP_LIMIT: 10,
+            VERIFY_EMAIL_LIMIT: 10
+        };
+
+        this.RATE_LIMIT_DURATIONS = {
+            LOGIN_DURATION: 15 * 60 * 1000,
+            SIGNUP_DURATION: 60 * 60 * 1000,
+            VERIFY_EMAIL_DURATION: 15 * 60 * 1000
+        };
+
         // Create SES client
         const sesClient = new SESClient({
             region: process.env.AWS_REGION,
