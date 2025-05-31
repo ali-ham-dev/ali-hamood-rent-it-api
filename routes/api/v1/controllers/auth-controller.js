@@ -1,8 +1,5 @@
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
 import knex from '../../../../knexfile.js';
-import { sendVerificationEmail } from '../../../../utils/email.js';
 import { logError } from '../../../../utils/logger.js';
 import authModel from '../model/auth-model.js';
 

@@ -1,8 +1,5 @@
 import nodemailer from 'nodemailer';
-import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
-import knex from '../../../../knexfile.js';
 import { SESClient } from '@aws-sdk/client-ses';
 import { createTransport } from 'nodemailer-ses-transport';
 
