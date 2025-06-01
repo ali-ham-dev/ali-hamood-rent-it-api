@@ -123,7 +123,9 @@ class AuthModel {
             if (process.env.SERVER_ENV !== 'dev') {
                 await this.transporter.sendMail(mailOptions);
             } else {
-                logError(token, 'token');
+                console.log('#########################');
+                console.log(`Token: ${token}`);
+                console.log('#########################');
             }
             return { token, expires: new Date(Date.now() + duration) };
         } catch (error) {
