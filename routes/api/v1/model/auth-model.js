@@ -9,7 +9,7 @@ class AuthModel {
         this.NAME_REGEX = /^(?!.*\s{2})[A-Za-z\s-]+$/;    
         this.PHONE_REGEX = /\D/g;
         this.TOKEN_REGEX = /\D/g;
-        this.UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        this.USER_ID_REGEX = /^\d+$/;
         this.JWT_PUBLIC_KEY = process.env.JWT_PUBLIC_KEY;
         this.JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
         this.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
@@ -285,8 +285,8 @@ class AuthModel {
                 userId: null
             }
         }
-    
-        if (!this.UUID_REGEX.test(userId)) {
+
+        if (!this.USER_ID_REGEX.test(userId)) {
             return {
                 valid: false,
                 error: this.ERROR_MESSAGES.USER_ID_INVALID,
