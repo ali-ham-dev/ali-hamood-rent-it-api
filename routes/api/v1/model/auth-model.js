@@ -61,7 +61,7 @@ class AuthModel {
 
         if (process.env.SERVER_ENV === 'dev') {
             this.transporter = nodemailer.createTransport({
-                service: 'gmail',
+                service: process.env.EMAIL_SERVICE,
                 auth: {
                     user: process.env.EMAIL_USER,
                     pass: process.env.EMAIL_PASSWORD
