@@ -16,6 +16,12 @@ const {
 
 async function setupDatabase() {
     try {
+        if (!DB_PASSWORD) {
+            console.error('Error: DB_PASSWORD is not set in .env file');
+            console.error('When running setup-dbs.js, you need to be in the dir where the .env file is located');
+            process.exit(1);
+        }
+
         const connection = await mysql.createConnection({
             host: DB_HOST,
             port: DB_PORT,
