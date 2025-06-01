@@ -2,11 +2,11 @@ import initKnex from 'knex';
 import configuration from '../../../../knexfile.js';
 import { logError } from '../../../../utils/logger.js';
 
-const kenx = initKnex(configuration);
+const knex = initKnex(configuration);
 
 const getAssets = async (req, res) => {
     try {
-        const assets = await kenx('assets')
+        const assets = await knex('assets')
             .select('id');
         
         if (!assets.length) {
@@ -27,7 +27,7 @@ const getAssets = async (req, res) => {
 
 const getAsset = async (req, res) => {
     try {
-        const asset = await kenx('assets')
+        const asset = await knex('assets')
             .where('id', req.params.assetsId)
             .select('*');
         

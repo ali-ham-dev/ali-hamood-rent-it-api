@@ -1,8 +1,10 @@
 import bcrypt from 'bcrypt';
-import knex from '../../../../knexfile.js';
+import initKnex from 'knex';
+import configuration from '../../../../knexfile.js';
 import { logError } from '../../../../utils/logger.js';
 import authModel from '../model/auth-model.js';
 
+const knex = initKnex(configuration);   
 
 const signup = async (req, res) => {
     try {
