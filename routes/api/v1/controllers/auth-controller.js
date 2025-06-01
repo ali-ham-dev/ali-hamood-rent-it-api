@@ -317,7 +317,7 @@ const resendVerificationToken = async (req, res) => {
             res.status(200).json({ 
                 message: 'Verification email sent successfully',
                 token: {
-                    token: verificationToken,
+                    token: '',
                     expires: verificationTokenExpires
                 },
                 user: {
