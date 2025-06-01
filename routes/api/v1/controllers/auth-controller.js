@@ -23,7 +23,7 @@ const signup = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(isValid.password, 10);
         const { token: verificationToken, expires: verificationTokenExpires } = 
-            await authModel.sendVerificationEmail(isValid.email, 5 * 60 * 1000); 
+            await authModel.sendVerificationEmail(isValid.email, 60 * 1000); 
         
         const userId = await knex('users').insert({
             firstName: isValid.firstName,
@@ -178,7 +178,7 @@ const loginWithEmailToken = async (req, res) => {
         }
 
         const { token: verificationToken, expires: verificationTokenExpires } = 
-            await authModel.sendVerificationEmail(email, 5 * 60 * 1000);
+            await authModel.sendVerificationEmail(email, 60 * 1000);
 
         await knex('users')
             .where({ id: user.id })
@@ -291,7 +291,7 @@ const resendVerificationToken = async (req, res) => {
         }
 
         const { token: verificationToken, expires: verificationTokenExpires } = 
-            await authModel.sendVerificationEmail(user.email, 5 * 60 * 1000);
+            await authModel.sendVerificationEmail(user.email, 60 * 1000);
 
         await knex('users')
             .where({ id: user.id })
