@@ -18,7 +18,7 @@ const signup = async (req, res) => {
             .where({ email: isValid.email })
             .first();
         if (existingUser) {
-            return res.status(422).json({ error: 'Email already registered' });
+            return res.status(400).json({ error: 'Email already registered' });
         }
 
         const hashedPassword = await bcrypt.hash(isValid.password, 10);
@@ -38,7 +38,7 @@ const signup = async (req, res) => {
             updatedAt: new Date()
         });
 
-        res.status(201).json({
+        res.status(200).json({
             message: 'User registered successfully. Please check your email to verify your account.',
             userId: userId[0],
             verificationTokenExpires: verificationTokenExpires
@@ -111,15 +111,15 @@ const loginWithPassword = async (req, res) => {
             .first();
 
         if (!user) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(400).json({ error: 'Invalid credentials' });
         }
 
         if (user.password !== isValidPassword.password) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(400).json({ error: 'Invalid credentials' });
         }
 
         if (user.verificationRequested === true) {
-            return res.status(403).json({ 
+            return res.status(400).json({ 
                 message: 'Please verify your email before logging in',
                 verificationTokenExpires: user.emailVerificationTokenExpires 
             });
@@ -167,11 +167,11 @@ const loginWithEmailToken = async (req, res) => {
             .first();
 
         if (!user) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(400).json({ error: 'Invalid credentials' });
         }
 
         if (user.verificationRequested === true) {
-            return res.status(403).json({ 
+            return res.status(400).json({ 
                 message: 'Please verify your email before logging in',
                 verificationTokenExpires: user.emailVerificationTokenExpires 
             });
