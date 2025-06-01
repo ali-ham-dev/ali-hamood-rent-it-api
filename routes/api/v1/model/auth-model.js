@@ -260,7 +260,7 @@ class AuthModel {
             }
         }
     
-        const tokenOnlyNumbers = token.replace(TOKEN_REGEX, '');
+        const tokenOnlyNumbers = token.replace(this.TOKEN_REGEX, '');
     
         if (tokenOnlyNumbers.length !== this.VALIDATION_RULES.TOKEN_LENGTH) {
             return {
