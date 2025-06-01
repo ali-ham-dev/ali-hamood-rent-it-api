@@ -128,7 +128,7 @@ class AuthModel {
 
                     <div style="color: #7f8c8d; font-size: 14px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
                         <p>If you did not create an account with Rent It, you can safely ignore this email.</p>
-                        <p>This verification link will expire in ${formattedDuration}.</p>
+                        <p>This verification link will expire in ${this.formatDuration(duration)}.</p>
                     </div>
                 </div>
             `
@@ -215,7 +215,7 @@ class AuthModel {
             }
         }
     
-        const numberOnlyPhone = phone.replace(PHONE_REGEX, '');
+        const numberOnlyPhone = phone.replace(this.PHONE_REGEX, '');
     
         if (numberOnlyPhone.length < this.VALIDATION_RULES.PHONE_MIN_LENGTH ||
             numberOnlyPhone.length > this.VALIDATION_RULES.PHONE_MAX_LENGTH
@@ -313,8 +313,8 @@ class AuthModel {
     validateSignup = (data) => {
         const { firstName, lastName, email, phone, password } = data;
     
-        const nameValidation = validateName(firstName);
-        const lastNameValidation = validateName(lastName);
+        const nameValidation = this.validateName(firstName);
+        const lastNameValidation = this.validateName(lastName);
         if (!nameValidation.valid || !lastNameValidation.valid) {
             return {
                 valid: false,
@@ -322,7 +322,7 @@ class AuthModel {
             }
         }
     
-        const emailValidation = validateEmail(email);
+        const emailValidation = this.validateEmail(email);
         if (!emailValidation.valid) {
             return {
                 valid: false,
@@ -330,7 +330,7 @@ class AuthModel {
             }
         }
     
-        const phoneValidation = validatePhone(phone);
+        const phoneValidation = this.validatePhone(phone);
         if (!phoneValidation.valid) {
             return {
                 valid: false,
@@ -338,7 +338,7 @@ class AuthModel {
             }
         }
     
-        const passwordValidation = validatePassword(password);
+        const passwordValidation = this.validatePassword(password);
         if (!passwordValidation.valid) {
             return {
                 valid: false,
