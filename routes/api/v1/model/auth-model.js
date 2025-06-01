@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
 import { SESClient } from '@aws-sdk/client-ses';
 import sesTransportPkg from 'nodemailer-ses-transport';
+import { logError } from '../../../../utils/logger.js';
 const { createTransport } = sesTransportPkg;
 
 class AuthModel {
