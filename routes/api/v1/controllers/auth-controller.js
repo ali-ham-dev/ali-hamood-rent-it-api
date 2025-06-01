@@ -291,7 +291,7 @@ const resendVerificationToken = async (req, res) => {
         }
 
         const { token: verificationToken, expires: verificationTokenExpires } = 
-            await authModel.sendVerificationEmail(email, 5 * 60 * 1000);
+            await authModel.sendVerificationEmail(user.email, 5 * 60 * 1000);
 
         await knex('users')
             .where({ id: user.id })
