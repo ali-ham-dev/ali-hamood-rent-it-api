@@ -1,9 +1,6 @@
 import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
-import { SESClient } from '@aws-sdk/client-ses';
-import sesTransportPkg from 'nodemailer-ses-transport';
 import { logError } from '../../../../utils/logger.js';
-const { createTransport } = sesTransportPkg;
 
 class AuthModel {
 
@@ -59,28 +56,15 @@ class AuthModel {
             CHECK_EMAIL_DURATION: 15 * 60 * 1000
         };
 
-        if (process.env.SERVER_ENV === 'dev') {
-            this.transporter = nodemailer.createTransport({
-                service: process.env.EMAIL_SERVICE,
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASSWORD
-                }
-            });
-        } else {
-            const sesClient = new SESClient({
-                region: process.env.AWS_REGION,
-                credentials: {
-                    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-                    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-                }
-            });
-
-            this.transporter = createTransport({
-                ses: sesClient,
-                aws: { ses: sesClient }
-            });
-        }
+        this.transporter = nodemailer.createTransport({
+            host: 'smtp.office365.com',
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD
+            }
+        });
     }
 
     formatDuration(milliseconds) {
