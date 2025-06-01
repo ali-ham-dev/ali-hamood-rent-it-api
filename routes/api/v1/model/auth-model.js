@@ -136,7 +136,7 @@ class AuthModel {
     jwtToken = (userId, email) => {
         return jwt.sign(
             { userId: userId, email: email },
-            this.JWT_PRIVATE_KEY,
+            this.JWT_PRIVATE_KEY?.replace(/\\n/g, '\n'),
             { 
                 algorithm: 'RS256',
                 expiresIn: this.JWT_EXPIRES_IN
