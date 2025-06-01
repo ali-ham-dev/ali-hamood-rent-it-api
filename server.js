@@ -18,14 +18,6 @@ const rateLimitWindowMs = 15 * 60 * 1000;
 const rateLimitLimit = 100;
 const rateLimitMessage = 'Too many requests, please try again later.';
 
-// Rate limiting middleware
-app.use(rateLimit({
-  windowMs: rateLimitWindowMs,
-  limit: rateLimitLimit,
-  message: rateLimitMessage,
-  skip: (req, res) => req.method === 'OPTIONS'
-}));
-
 const helmetOptionsProd = {
   contentSecurityPolicy: {
       directives: {
@@ -80,14 +72,52 @@ const helmetOptionsDev = {
   xssFilter: true
 }
 
+const corsOptionsDev = {
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 86400
+}
+
+const corsOptionsProd = {
+  origin: FRONT_END_URL,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 86400
+}
+
+// Rate limiting middleware
+app.use(rateLimit({
+  windowMs: rateLimitWindowMs,
+  limit: rateLimitLimit,
+  message: rateLimitMessage,
+  skip: (req, res) => req.method === 'OPTIONS'
+}));
+
 // Helmet middleware
 app.use(helmet(SERVER_ENV === 'dev' ? helmetOptionsDev : helmetOptionsProd));
+
+// CORS middleware
+app.use(cors(SERVER_ENV === 'dev' ? corsOptionsDev : corsOptionsProd));
+// Add CORS headers manually for preflight requests
+// app.options('*', cors());
 
 // Parse JSON bodies
 app.use(express.json({ limit: '10kb' }));
 
 // Parse URL-encoded bodies
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// Security headers middleware
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    next();
+});
 
 // Log all requests
 app.use((req, res, next) => {

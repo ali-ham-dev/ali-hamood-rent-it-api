@@ -22,8 +22,15 @@ const verifyEmailLimiter = rateLimit({
     message: 'Too many verify email attempts, please try again later.'
 });
 
+const checkEmailLimiter = rateLimit({
+    windowMs: authModel.RATE_LIMIT_DURATIONS.CHECK_EMAIL_DURATION,
+    limit: authModel.RATE_LIMIT_RULES.CHECK_EMAIL_LIMIT,
+    message: 'Too many check email attempts, please try again later.'
+});
+
 authRouter
     .post('/signup', signupLimiter, authController.signup)
+    .post('/check-email', checkEmailLimiter, authController.checkEmail)
     .post('/login-password', loginLimiter, authController.loginWithPassword)
     .post('/login-email-token', loginLimiter, authController.loginWithEmailToken)
     .post('/verify-email-token/:userId/:token', verifyEmailLimiter, authController.verifyEmailToken)

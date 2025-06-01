@@ -47,6 +47,42 @@ const signup = async (req, res) => {
     }
 };
 
+const checkEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const isValidEmail = authModel.validateEmail(email);
+        if (!isValidEmail.valid) {
+            return res.status(400).json({ error: isValidEmail.error });
+        }
+
+        const user = await knex('users')
+            .select('id',
+                    'firstName', 
+                    'lastName', 
+                    'email',
+                    'verificationRequested', 
+                    'emailVerificationTokenExpires')
+            .where({ email: isValidEmail.email })
+            .first();
+
+        if (user && user.email === isValidEmail.email) {
+            return res.status(200).json({
+                emailIsAvailable: false,
+                message: 'Email is already registered'
+            });
+        }
+
+        res.status(200).json({
+            emailIsAvailable: true,
+            message: 'Email is available'
+        });
+    } catch (error) {
+        logError(error, 'checkEmail');
+        res.status(500).json({ error: 'Error checking email' });
+    }
+};
+
 const loginWithPassword = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -272,7 +308,8 @@ const resendVerificationToken = async (req, res) => {
 }; 
 
 export {
-    signup, 
+    signup,
+    checkEmail,
     loginWithPassword,
     loginWithEmailToken,
     verifyEmailToken,

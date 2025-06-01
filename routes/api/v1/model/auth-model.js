@@ -47,13 +47,15 @@ class AuthModel {
         this.RATE_LIMIT_RULES = {
             LOGIN_LIMIT: 10,
             SIGNUP_LIMIT: 10,
-            VERIFY_EMAIL_LIMIT: 10
+            VERIFY_EMAIL_LIMIT: 10,
+            CHECK_EMAIL_LIMIT: 10
         };
 
         this.RATE_LIMIT_DURATIONS = {
             LOGIN_DURATION: 15 * 60 * 1000,
             SIGNUP_DURATION: 60 * 60 * 1000,
-            VERIFY_EMAIL_DURATION: 15 * 60 * 1000
+            VERIFY_EMAIL_DURATION: 15 * 60 * 1000,
+            CHECK_EMAIL_DURATION: 15 * 60 * 1000
         };
 
         if (process.env.SERVER_ENV === 'dev') {
