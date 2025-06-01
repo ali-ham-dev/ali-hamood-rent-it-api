@@ -231,7 +231,13 @@ const verifyEmailToken = async (req, res) => {
         }
 
         if (user.emailVerificationTokenExpires < new Date()) {
-            return res.status(400).json({ verificationTokenExpires: verificationTokenExpires });
+            return res.status(400).json({ 
+                error: 'Verification token has expired',
+                token: {
+                    token: '',
+                    expires: user.emailVerificationTokenExpires
+                }
+            });
         }
 
         if (user.emailVerificationToken !== token) {
@@ -287,7 +293,13 @@ const resendVerificationToken = async (req, res) => {
         }
 
         if (user.emailVerificationTokenExpires > new Date()) {
-            return res.status(400).json({ error: 'Verification token has not expired' });
+            return res.status(400).json({ 
+                error: 'Verification token has not expired',
+                token: {
+                    token: '',
+                    expires: user.emailVerificationTokenExpires
+                }
+            });
         }
 
         const { token: verificationToken, expires: verificationTokenExpires } = 
