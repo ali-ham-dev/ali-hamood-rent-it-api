@@ -47,14 +47,16 @@ class AuthModel {
             LOGIN_LIMIT: 10,
             SIGNUP_LIMIT: 10,
             VERIFY_EMAIL_LIMIT: 10,
-            CHECK_EMAIL_LIMIT: 10
+            CHECK_EMAIL_LIMIT: 10,
+            CHECK_JWT_TOKEN_LIMIT: 10
         };
 
         this.RATE_LIMIT_DURATIONS = {
             LOGIN_DURATION: 15 * 60 * 1000,
             SIGNUP_DURATION: 60 * 60 * 1000,
             VERIFY_EMAIL_DURATION: 15 * 60 * 1000,
-            CHECK_EMAIL_DURATION: 15 * 60 * 1000
+            CHECK_EMAIL_DURATION: 15 * 60 * 1000,
+            CHECK_JWT_TOKEN_DURATION: 15 * 60 * 1000
         };
 
         this.transporter = nodemailer.createTransport({
@@ -134,7 +136,7 @@ class AuthModel {
         }
     }
 
-    checkForJwtInRequestHeader = ({ header }) => {
+    checkForJwtInRequestHeader = (header) => {
         try {
             if (!header || !header.authorization) {
                 return {

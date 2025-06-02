@@ -263,7 +263,7 @@ const verifyEmailToken = async (req, res) => {
             });
 
         const jwtToken = authModel.jwtToken(user.id, user.email);
-        res.status(200).json({ 
+        res.status(200).json({
             token: jwtToken,
             message: 'Token verified successfully',
             user: {
@@ -338,7 +338,47 @@ const resendVerificationToken = async (req, res) => {
         logError(error, 'resendVerificationToken');
         res.status(500).json({ error: 'Error sending verification email' });
     }
-}; 
+};
+
+const checkJwtToken = async (req, res) => {
+    try {
+        const { userId, email } = req.user;
+
+        const isValidUserId = authModel.validateUserId(userId);
+        if (!isValidUserId.valid) {
+            return res.status(400).json({ error: isValidUserId.error });
+        }
+
+        const isValidEmail = authModel.validateEmail(email);
+        if (!isValidEmail.valid) {
+            return res.status(400).json({ error: isValidEmail.error });
+        }
+
+        const user = await knex('users')
+            .select('id', 'email')
+            .where({ id: isValidUserId.userId })
+            .first();
+
+        if (!user) {
+            return res.status(400).json({ error: 'User not found' });
+        }
+
+        if (user.email !== isValidEmail.email) {
+            return res.status(400).json({ error: 'Invalid user credentials' });
+        }
+
+        res.status(200).json({
+            valid: true,
+            user: {
+                id: user.id,
+                email: user.email
+            }
+        });
+    } catch (error) {
+        logError(error, 'checkJwtToken');
+        res.status(500).json({ error: 'Error validating token' });
+    }
+};
 
 export {
     signup,
@@ -346,5 +386,6 @@ export {
     loginWithPassword,
     loginWithEmailToken,
     verifyEmailToken,
-    resendVerificationToken
+    resendVerificationToken,
+    checkJwtToken
 }
