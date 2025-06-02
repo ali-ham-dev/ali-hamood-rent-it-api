@@ -27,7 +27,8 @@ class AuthModel {
             TOKEN_REQUIRED: 'Token is required',
             TOKEN_INVALID: 'Token must be 6 digits',
             USER_ID_REQUIRED: 'User ID is required',
-            USER_ID_INVALID: 'User ID must be a valid UUID'
+            USER_ID_INVALID: 'User ID must be a valid UUID',
+            VALIDATE_JWT_TOKEN: 'Invalid JWT token'
         };
 
         // Add validation rules
@@ -133,10 +134,72 @@ class AuthModel {
         }
     }
 
+    checkForJwtInRequestHeader = ({ header }) => {
+        try {
+            if (!header || !header.authorization) {
+                return {
+                    valid: false,
+                    error: 'No authorization header provided'
+                }
+            }
+
+            if (!header.authorization.startsWith('Bearer ')) {
+                return {
+                    valid: false,
+                    error: 'Invalid authorization format. Must be Bearer token'
+                }
+            }
+
+            const token = header.authorization.split(' ')[1];
+            if (!token) {
+                return {
+                    valid: false,
+                    error: 'Invalid token'
+                }
+            }
+
+            if (typeof token !== 'string') {
+                return {
+                    valid: false,
+                    error: 'Token must be a string'
+                }
+            }
+
+            const parts = token.split('.');
+            if (parts.length !== 3) {
+                return {
+                    valid: false,
+                    error: 'Invalid token format'
+                }
+            }
+
+            const decoded = jwt.verify(token, this.getJwtPublicKey());
+            return {
+                valid: true,
+                error: null,
+                decoded
+            };
+        } catch (error) {
+            logError(error, 'verifyJwtToken');
+            return {
+                valid: false,
+                error: this.ERROR_MESSAGES.VALIDATE_JWT_TOKEN
+            }
+        }
+    }
+
+    getJwtPublicKey() {
+        return this.JWT_PUBLIC_KEY?.replace(/\\n/g, '\n');
+    }
+
+    getJwtPrivateKey() {
+        return this.JWT_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    }
+
     jwtToken = (userId, email) => {
         return jwt.sign(
             { userId: userId, email: email },
-            this.JWT_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+            this.getJwtPrivateKey(),
             { 
                 algorithm: 'RS256',
                 expiresIn: this.JWT_EXPIRES_IN
