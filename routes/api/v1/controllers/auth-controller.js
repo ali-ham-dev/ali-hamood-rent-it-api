@@ -189,7 +189,16 @@ const loginWithEmailToken = async (req, res) => {
                 updatedAt: new Date()
             });
 
-        res.status(200).json({ message: 'Verification email sent successfully' });
+        res.status(200).json({
+            message: 'Verification email sent successfully',
+            token: {
+                token: '',
+                expires: verificationTokenExpires
+            },
+            user: {
+                id: user.id
+            }
+        });
     } catch (error) {
         logError(error, 'loginWithPassword');
         res.status(500).json({ error: 'Error during login' });
