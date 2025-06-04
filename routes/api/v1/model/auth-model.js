@@ -44,11 +44,11 @@ class AuthModel {
         };
 
         this.RATE_LIMIT_RULES = {
-            LOGIN_LIMIT: 10,
-            SIGNUP_LIMIT: 10,
-            VERIFY_EMAIL_LIMIT: 10,
-            CHECK_EMAIL_LIMIT: 10,
-            CHECK_JWT_TOKEN_LIMIT: 10
+            LOGIN_LIMIT: 100,
+            SIGNUP_LIMIT: 100,
+            VERIFY_EMAIL_LIMIT: 100,
+            CHECK_EMAIL_LIMIT: 100,
+            CHECK_JWT_TOKEN_LIMIT: 100
         };
 
         this.RATE_LIMIT_DURATIONS = {

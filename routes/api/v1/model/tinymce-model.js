@@ -19,6 +19,10 @@ class TinymceModel {
         return process.env.TINY_MCE_PRIVATE_KEY?.replace(/\\n/g, '\n');
     }
 
+    getAPIKey() {
+        return process.env.TINY_MCE_API_KEY;
+    }
+
     generateJwtSessionToken() {
         const expiresIn = Math.floor(Date.now() / 1000) + parseInt(this.sessionExpiresIn);
         return jwt.sign(
