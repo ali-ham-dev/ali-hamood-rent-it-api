@@ -23,7 +23,7 @@ const validateJwtToken = (req, res, next) => {
 
 tinymceRouter
     .route('/auth-token')
-        .get(tinymceLimiter, validateJwtToken, tinymceController.getAuthToken); 
+        .get(tinymceLimiter, validateJwtToken, tinymceController.getAPIKey); 
 
 
 export default tinymceRouter;
