@@ -24,7 +24,7 @@ assetsRouter
     .get(assetsController.getAsset);
 
 assetsRouter
-    .route('/:userId/upload')
+    .route('/upload/media')
     .all(validateJwtToken)
     .post(assetsController.uploadAsset);
 
