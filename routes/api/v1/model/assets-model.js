@@ -15,6 +15,16 @@ class AssetsModel {
         };
     }
 
+    getImageMimeTypes() {
+        return process.env.IMG_EXT.split(',').map(ext => `image/${ext}`);
+        console.log(imageMimeTypes);
+    }
+
+    getVideoMimeTypes() {
+        return process.env.VID_EXT.split(',').map(ext => `video/${ext}`);
+        console.log(videoMimeTypes);
+    }
+
     storage = multer.diskStorage({
         destination: (req, file, cb) => {
             const assetId = parseInt(req.params.assetId);

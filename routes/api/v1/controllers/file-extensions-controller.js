@@ -10,8 +10,6 @@ const getImageFileExtensions = async (req, res) => {
     try {
         const imageFileExtensions = process.env.IMG_EXT;
 
-        console.log(imageFileExtensions);
-
         if (!imageFileExtensions.length) {
             return res.status(404).json({
                 message: 'No image file extensions found'
@@ -31,8 +29,6 @@ const getImageFileExtensions = async (req, res) => {
 const getVideoFileExtensions = async (req, res) => {
     try {
         const videoFileExtensions = process.env.VID_EXT;
-
-        console.log(videoFileExtensions);
 
         if (!videoFileExtensions.length) {
             return res.status(404).json({
