@@ -16,6 +16,8 @@ const getImageFileExtensions = async (req, res) => {
         }
 
         res.status(200).json(imageFileExtensions);
+
+        console.log(res.body);
     } catch (error) {
         logError(error, 'retrieving image file extensions');
 
@@ -37,6 +39,7 @@ const getVideoFileExtensions = async (req, res) => {
         }
 
         res.status(200).json(videoFileExtensions);
+        console.log(res.body);
     } catch (error) {
         logError(error, 'retrieving video file extensions');
 

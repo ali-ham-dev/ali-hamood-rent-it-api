@@ -5,6 +5,8 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { requestLogger } from './utils/logger.js';
 import v1Router from './routes/api/v1/index.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Load environment variables
 dotenv.config();
@@ -13,6 +15,10 @@ const SERVER_HOST = process.env.SERVER_HOST || '127.0.0.1';
 const FRONT_END_URL = process.env.FRONT_END_URL || 'http://127.0.0.1:5173';
 const SERVER_ENV = process.env.SERVER_ENV || 'dev';
 const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+process.env.ROOT_DIR = path.resolve(__dirname, '.');
 
 const rateLimitWindowMs = 15 * 60 * 1000;
 const rateLimitLimit = 100;
