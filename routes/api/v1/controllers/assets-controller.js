@@ -47,7 +47,26 @@ const getAsset = async (req, res) => {
     }
 }
 
+const uploadAsset = async (req, res) => {
+    try {
+        // TODO: Implement file upload logic
+        res.status(501).json({
+            message: 'File upload functionality not implemented yet'
+        });
+
+        res.status(200).json({
+            message: 'Asset uploaded successfully'
+        });
+    } catch (error) {
+        logError(error, 'uploading asset');
+        res.status(500).json({
+            message: 'Error uploading asset'
+        });
+    }
+};
+
 export { 
     getAsset, 
-    getAssets 
+    getAssets,
+    uploadAsset 
 };
