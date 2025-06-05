@@ -4,10 +4,13 @@ import { logError } from '../../../../utils/logger.js';
 
 const knex = initKnex(configuration);
 
+// TODO: Remove file extensions table from db.
+
 const getImageFileExtensions = async (req, res) => {
     try {
-        const imageFileExtensions = await knex('image_file_extensions')
-            .select('*');
+        const imageFileExtensions = process.env.IMG_EXT;
+
+        console.log(imageFileExtensions);
 
         if (!imageFileExtensions.length) {
             return res.status(404).json({
@@ -16,8 +19,6 @@ const getImageFileExtensions = async (req, res) => {
         }
 
         res.status(200).json(imageFileExtensions);
-
-        console.log(res.body);
     } catch (error) {
         logError(error, 'retrieving image file extensions');
 
@@ -29,8 +30,9 @@ const getImageFileExtensions = async (req, res) => {
 
 const getVideoFileExtensions = async (req, res) => {
     try {
-        const videoFileExtensions = await knex('video_file_extensions')
-            .select('*');
+        const videoFileExtensions = process.env.VID_EXT;
+
+        console.log(videoFileExtensions);
 
         if (!videoFileExtensions.length) {
             return res.status(404).json({
@@ -39,7 +41,6 @@ const getVideoFileExtensions = async (req, res) => {
         }
 
         res.status(200).json(videoFileExtensions);
-        console.log(res.body);
     } catch (error) {
         logError(error, 'retrieving video file extensions');
 

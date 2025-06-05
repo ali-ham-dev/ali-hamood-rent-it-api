@@ -51,7 +51,7 @@ const uploadAsset = async (req, res) => {
     try {
         // TODO: Implement file upload logic
 
-        console.log('req.body', req.body);
+        console.log('req.body upload images');
 
         res.status(200).json({
             message: 'Asset uploaded successfully'
