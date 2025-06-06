@@ -81,9 +81,25 @@ const getAssetsForRent = async (req, res) => {
 
 const getRentedAssets = async (req, res) => {
     try {
-        const assets = await knex('assets')
-            .where('is_rented', true)
+        const user = req.user;
+
+        if (!user) {
+            return res.status(401).json({
+                message: 'Unauthorized'
+            });
+        }
+
+        const rentedAssets = await knex('assets')
+            .where('rented_by_user_id', user.userId)
             .select('*');
+        
+        if (!rentedAssets || !rentedAssets.length) {
+            return res.status(404).json({
+                message: 'No rented assets found'
+            });
+        }
+
+        return res.status(200).json(rentedAssets);
     } catch (error) {
         logError(error, 'retrieving rented assets');
         return res.status(500).json({
