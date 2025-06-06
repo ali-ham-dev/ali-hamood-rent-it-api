@@ -1,6 +1,7 @@
 import initKnex from 'knex';
 import configuration from '../../../../knexfile.js';
 import { logError } from '../../../../utils/logger.js';
+import assetsModel from '../model/assets-model.js';
 
 const knex = initKnex(configuration);
 
@@ -52,6 +53,8 @@ const uploadAsset = async (req, res) => {
         // TODO: Implement file upload logic
 
         console.log('req.body upload images');
+        assetsModel.getImageMimeTypes();
+        assetsModel.getVideoMimeTypes();
 
         res.status(200).json({
             message: 'Asset uploaded successfully'

@@ -7,16 +7,19 @@ const knex = initKnex(configuration);
 // TODO: Remove file extensions table from db.
 
 const getImageFileExtensions = async (req, res) => {
-    try {
-        const imageFileExtensions = process.env.IMG_EXT;
-
-        if (!imageFileExtensions.length) {
+    try { 
+        const imgExtStr = process.env.IMG_EXT;
+        const imgExtObj = JSON.parse(imgExtStr);
+        const imgExtAry = [];
+        imgExtObj.forEach(ext => {
+            imgExtAry.push(ext);
+        });
+        if (!imgExtAry.length) {
             return res.status(404).json({
                 message: 'No image file extensions found'
             });
         }
-
-        res.status(200).json(imageFileExtensions);
+        res.status(200).json(imgExtAry);
     } catch (error) {
         logError(error, 'retrieving image file extensions');
 
@@ -28,15 +31,18 @@ const getImageFileExtensions = async (req, res) => {
 
 const getVideoFileExtensions = async (req, res) => {
     try {
-        const videoFileExtensions = process.env.VID_EXT;
-
-        if (!videoFileExtensions.length) {
+        const vidExtStr = process.env.VID_EXT;
+        const vidExtObj = JSON.parse(vidExtStr);
+        const vidExtAry = [];
+        vidExtObj.forEach(ext => {
+            vidExtAry.push(ext);
+        });
+        if (!vidExtAry.length) {
             return res.status(404).json({
                 message: 'No video file extensions found'
             });
         }
-
-        res.status(200).json(videoFileExtensions);
+        res.status(200).json(vidExtAry);
     } catch (error) {
         logError(error, 'retrieving video file extensions');
 
