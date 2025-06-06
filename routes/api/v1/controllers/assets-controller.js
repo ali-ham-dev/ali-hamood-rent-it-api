@@ -48,16 +48,52 @@ const getAsset = async (req, res) => {
     }
 }
 
-const uploadAsset = async (req, res) => {
+const uploadMedia = async (req, res) => {
     try {
-        // TODO: Implement file upload logic
+        const upload = assetsModel.getUploadMulter().single('file');
 
-        console.log('req.body upload images');
-        assetsModel.getImageMimeTypes();
-        assetsModel.getVideoMimeTypes();
+        upload(req, res, async (err) => {
+            if (err) {
+                if (err instanceof multer.MulterError) {
+                    if (err.code === 'LIMIT_FILE_SIZE') {
+                        return res.status(400).json({
+                            message: `File size exceeds the limit of ${process.env.MAX_FILE_SIZE || 5}MB`
+                        });
+                    }
+                    return res.status(400).json({
+                        message: 'Error uploading file'
+                    });
+                }
 
-        res.status(200).json({
-            message: 'Asset uploaded successfully'
+                return res.status(400).json({
+                    message: err.message
+                });
+            }
+
+            if (!req.file) {
+                return res.status(400).json({
+                    message: 'No file uploaded'
+                });
+            }
+
+            const [assetId] = await knex('assets').insert({
+                // filename: req.file.filename,
+                // originalname: req.file.originalname,
+                // mimetype: req.file.mimetype,
+                // size: req.file.size,
+                // path: req.file.path
+            });
+
+            res.status(200).json({
+                message: 'Asset uploaded successfully',
+                assetId,
+                file: {
+                    filename: req.file.filename,
+                    originalname: req.file.originalname,
+                    mimetype: req.file.mimetype,
+                    size: req.file.size
+                }
+            });
         });
     } catch (error) {
         logError(error, 'uploading asset');
@@ -67,8 +103,20 @@ const uploadAsset = async (req, res) => {
     }
 };
 
+const uploadAssetDetails = async (req, res) => {
+    try {
+        res.status(200).json({ message: 'Asset details uploaded successfully' });
+    } catch (error) {
+        logError(error, 'uploading asset details');
+        res.status(500).json({
+            message: 'Error uploading asset details'
+        });
+    }
+}
+
 export { 
     getAsset, 
     getAssets,
-    uploadAsset 
+    uploadMedia,
+    uploadAssetDetails
 };

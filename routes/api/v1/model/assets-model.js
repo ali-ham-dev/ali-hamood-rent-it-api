@@ -16,13 +16,23 @@ class AssetsModel {
     }
 
     getImageMimeTypes() {
-        return process.env.IMG_EXT.split(',').map(ext => `image/${ext}`);
-        console.log(imageMimeTypes);
+        const imgExtStr = process.env.IMG_EXT;
+        const imgExtObj = JSON.parse(imgExtStr);
+        const extAry = [];
+        for (const ext of imgExtObj) {
+            extAry.push(`image/${ext}`);
+        }
+        return extAry;
     }
 
     getVideoMimeTypes() {
-        return process.env.VID_EXT.split(',').map(ext => `video/${ext}`);
-        console.log(videoMimeTypes);
+        const vidExtStr = process.env.VID_EXT;
+        const vidExtObj = JSON.parse(vidExtStr);
+        const extAry = [];
+        for (const ext of vidExtObj) {
+            extAry.push(`video/${ext}`);
+        }
+        return extAry;
     }
 
     storage = multer.diskStorage({
@@ -52,8 +62,8 @@ class AssetsModel {
     };
 
     fileFilter = (req, file, cb) => {
-        const allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        const allowedVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/webm'];
+        const allowedImageTypes = this.getImageMimeTypes();
+        const allowedVideoTypes = this.getVideoMimeTypes();
 
         if (allowedImageTypes.includes(file.mimetype) || allowedVideoTypes.includes(file.mimetype)) {
             cb(null, true);
@@ -62,11 +72,13 @@ class AssetsModel {
         }
     };
 
-    upload = multer({
-        storage: this.storage,
-        limits: this.limits,
-        fileFilter: this.fileFilter
-    });
+    getUploadMulter() {
+        return multer({
+            storage: this.storage,
+            limits: this.limits,
+            fileFilter: this.fileFilter
+        });
+    }
 }
 
 export default new AssetsModel();

@@ -32,11 +32,11 @@ assetsRouter
 assetsRouter
     .route('/upload/media')
     .all(validateJwtToken)
-    .post(myAssetsLimiter, assetsController.uploadAsset);
+    .post(myAssetsLimiter, assetsController.uploadMedia);
 
 assetsRouter
     .route('/upload/asset')
     .all(validateJwtToken)
-    .post(myAssetsLimiter, assetsController.uploadAsset);
+    .post(myAssetsLimiter, assetsController.uploadAssetDetails);
 
 export default assetsRouter;
