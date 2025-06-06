@@ -37,7 +37,7 @@ class AssetsModel {
 
     storage = multer.diskStorage({
         destination: (req, file, cb) => {
-            const assetId = parseInt(req.params.assetId);
+            const assetId = parseInt(req.params.assetsId);
             if (!assetId || isNaN(assetId)) {
                 return cb(new Error('Invalid or missing asset ID'), null);
             }

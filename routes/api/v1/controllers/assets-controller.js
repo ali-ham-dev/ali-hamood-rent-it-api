@@ -3,6 +3,7 @@ import configuration from '../../../../knexfile.js';
 import { logError } from '../../../../utils/logger.js';
 import assetsModel from '../model/assets-model.js';
 import authModel from '../model/auth-model.js';
+import multer from 'multer';
 
 const knex = initKnex(configuration);
 
@@ -52,7 +53,6 @@ const getAsset = async (req, res) => {
 const uploadMedia = async (req, res) => {
     try {
         const upload = assetsModel.getUploadMulter().single('file');
-
         upload(req, res, async (err) => {
             if (err) {
                 if (err instanceof multer.MulterError) {
@@ -65,7 +65,6 @@ const uploadMedia = async (req, res) => {
                         message: 'Error uploading file'
                     });
                 }
-
                 return res.status(400).json({
                     message: err.message
                 });
@@ -77,15 +76,25 @@ const uploadMedia = async (req, res) => {
                 });
             }
 
-            const [assetId] = await knex('assets').insert({
-                // filename: req.file.filename,
-                // originalname: req.file.originalname,
-                // mimetype: req.file.mimetype,
-                // size: req.file.size,
-                // path: req.file.path
-            });
+            const assetId = req.params.assetsId;
+            const currMedia = await knex('assets')
+                .where('id', assetId)
+                .select('media')
+                .first();
+            if (!currMedia) {
+                return res.status(404).json({
+                    message: 'Asset not found'
+                });
+            }
 
-            res.status(200).json({
+            const mediaLink = assetsModel.makeMediaUrl(req.file.filename, assetId);
+            await knex('assets')
+                .where('id', assetId)
+                .update({
+                    media: JSON.stringify([...currMedia.media, mediaLink]),
+                });
+
+            return res.status(200).json({
                 message: 'Asset uploaded successfully',
                 assetId,
                 file: {
@@ -98,7 +107,7 @@ const uploadMedia = async (req, res) => {
         });
     } catch (error) {
         logError(error, 'uploading asset');
-        res.status(500).json({
+        return res.status(500).json({
             message: 'Error uploading asset'
         });
     }

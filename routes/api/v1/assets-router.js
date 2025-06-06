@@ -30,7 +30,7 @@ assetsRouter
     .get(myAssetsLimiter, assetsController.getAsset);
 
 assetsRouter
-    .route('/upload/media')
+    .route('/upload/media/:assetsId')
     .all(validateJwtToken)
     .post(myAssetsLimiter, assetsController.uploadMedia);
 
