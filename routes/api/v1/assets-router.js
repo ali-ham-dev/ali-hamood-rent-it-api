@@ -30,6 +30,16 @@ assetsRouter
     .get(myAssetsLimiter, assetsController.getAsset);
 
 assetsRouter
+    .route('/user/assets-for-rent')
+    .all(validateJwtToken)
+    .get(myAssetsLimiter, assetsController.getAssetsForRent);
+
+assetsRouter
+    .route('/user/rented-assets')
+    .all(validateJwtToken)
+    .get(myAssetsLimiter, assetsController.getRentedAssets);
+
+assetsRouter
     .route('/upload/media/:assetsId')
     .all(validateJwtToken)
     .post(myAssetsLimiter, assetsController.uploadMedia);

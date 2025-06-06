@@ -50,6 +50,48 @@ const getAsset = async (req, res) => {
     }
 }
 
+const getAssetsForRent = async (req, res) => {
+    try {
+        const user = req.user;
+
+        if (!user) {
+            return res.status(401).json({
+                message: 'Unauthorized'
+            });
+        }
+
+        const userAssets = await knex('assets')
+            .where('user_id', user.userId)
+            .select('*');
+
+        if (!userAssets || !userAssets.length) {
+            return res.status(404).json({
+                message: 'No assets found'
+            });
+        }
+
+        return res.status(200).json(userAssets);
+    } catch (error) {
+        logError(error, 'retrieving assets for rent');
+        return res.status(500).json({
+            message: 'Error retrieving assets for rent'
+        });
+    }
+}
+
+const getRentedAssets = async (req, res) => {
+    try {
+        const assets = await knex('assets')
+            .where('is_rented', true)
+            .select('*');
+    } catch (error) {
+        logError(error, 'retrieving rented assets');
+        return res.status(500).json({
+            message: 'Error retrieving rented assets'
+        });
+    }
+}
+
 const uploadMedia = async (req, res) => {
     try {
         const upload = assetsModel.getUploadMulter().single('file');
@@ -146,5 +188,7 @@ export {
     getAsset, 
     getAssets,
     uploadMedia,
-    uploadAssetDetails
+    uploadAssetDetails,
+    getAssetsForRent,
+    getRentedAssets
 };
