@@ -15,20 +15,9 @@ export async function seed(knex) {
     await knex('users').insert([
         {
             "firstName": "Ali",
-            "lastName": "Hamood",
-            "email": "alihamood96@gmail.com",
+            "lastName": "ham",
+            "email": "ali@gmail.com",
             "phone": "1234567890",
-            "password": hashedPassword,
-            "verificationRequested": false,
-            "createdAt": new Date(),
-            "updatedAt": new Date(),
-            "lastLogin": new Date()
-        },
-        {
-            "firstName": "Test",
-            "lastName": "User",
-            "email": "test@example.com",
-            "phone": "9876543210",
             "password": hashedPassword,
             "verificationRequested": false,
             "createdAt": new Date(),

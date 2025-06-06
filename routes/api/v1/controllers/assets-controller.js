@@ -112,6 +112,7 @@ const uploadAssetDetails = async (req, res) => {
         const asset = await knex('assets')
             .insert({
                 title: assetDetails.title,
+                media: JSON.stringify([]),
                 price: assetDetails.price,
                 period: assetDetails.period,
                 description: assetDetails.description,
