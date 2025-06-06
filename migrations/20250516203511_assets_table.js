@@ -14,8 +14,19 @@ export async function up(knex) {
             table.boolean('is_rented').notNullable().defaultTo(false);
             table.timestamp('created_at').defaultTo(knex.fn.now());
             table.timestamp('updated_at').defaultTo(knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
-            table.integer('user_id').notNullable().defaultTo(0);
-            table.integer('rented_by_user_id').notNullable().defaultTo(0);
+            table.integer('user_id').notNullable().unsigned();
+            table.integer('rented_by_user_id').notNullable().unsigned();
+            table.foreign('user_id')
+                .references('id')
+                .inTable('users')
+                .onDelete('CASCADE')
+                .onUpdate('CASCADE');
+                
+            table.foreign('rented_by_user_id')
+                .references('id')
+                .inTable('users')
+                .onDelete('SET NULL')
+                .onUpdate('CASCADE');
         })
 }
 
