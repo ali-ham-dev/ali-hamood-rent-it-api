@@ -2,6 +2,7 @@ import initKnex from 'knex';
 import configuration from '../../../../knexfile.js';
 import { logError } from '../../../../utils/logger.js';
 import assetsModel from '../model/assets-model.js';
+import authModel from '../model/auth-model.js';
 
 const knex = initKnex(configuration);
 
@@ -105,7 +106,25 @@ const uploadMedia = async (req, res) => {
 
 const uploadAssetDetails = async (req, res) => {
     try {
-        res.status(200).json({ message: 'Asset details uploaded successfully' });
+        const assetDetails = req.body;
+        const user = req.user;
+        console.log(assetDetails);
+        const asset = await knex('assets')
+            .insert({
+                title: assetDetails.title,
+                price: assetDetails.price,
+                period: assetDetails.period,
+                description: assetDetails.description,
+                is_rented: false,
+                user_id: user.userId
+            });
+        if (!asset) {
+            return res.status(500).json({ error: 'Error uploading asset details' });
+        }
+        res.status(200).json({ 
+            message: 'Asset details uploaded successfully',
+            assetId: asset.id
+        });
     } catch (error) {
         logError(error, 'uploading asset details');
         res.status(500).json({
