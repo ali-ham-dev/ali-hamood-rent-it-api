@@ -6,6 +6,13 @@ import dotenv from 'dotenv';
  */
 
 export async function seed(knex) {
+    // First check if the user exists
+    const user = await knex('users').where('id', 1).first();
+    if (!user) {
+        console.log('User with ID 1 not found. Skipping assets seed.');
+        return;
+    }
+
     await knex('assets').del();
     await knex('assets').insert([
         {
@@ -27,7 +34,7 @@ export async function seed(knex) {
             "description": "Designed with a unique material composition, the N11 PRO is a remarkably valuable mid-sized GPS drone (not mini ones). Its weight is kept under 0.55lb, eliminating the need for FAA registration. This drone provides a perfect solution for hassle-free flying in the States without FAA, making it ideal for capturing stunning footage on the go. Enduring alloy brushless motors feature strong wind resistance and provides a faster, quieter while more powerful flight. Equipped with 3 batteries to provide up to 90 minutes of flight time, plus a long control range of 3328 Feet, let your drone swim in the sky freely.",
             "is_rented": false,
             "user_id": 1,
-            "rented_by_user_id": 0
+            "rented_by_user_id": 1
         }
     ]);
 }
