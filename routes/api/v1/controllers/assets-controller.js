@@ -108,8 +108,7 @@ const uploadAssetDetails = async (req, res) => {
     try {
         const assetDetails = req.body;
         const user = req.user;
-        console.log(assetDetails);
-        const asset = await knex('assets')
+        const [id] = await knex('assets')
             .insert({
                 title: assetDetails.title,
                 media: JSON.stringify([]),
@@ -119,16 +118,16 @@ const uploadAssetDetails = async (req, res) => {
                 is_rented: false,
                 user_id: user.userId
             });
-        if (!asset) {
+        if (!id) {
             return res.status(500).json({ error: 'Error uploading asset details' });
         }
-        res.status(200).json({ 
+        return res.status(200).json({ 
             message: 'Asset details uploaded successfully',
-            assetId: asset.id
+            assetId: id
         });
     } catch (error) {
         logError(error, 'uploading asset details');
-        res.status(500).json({
+        return res.status(500).json({
             message: 'Error uploading asset details'
         });
     }
