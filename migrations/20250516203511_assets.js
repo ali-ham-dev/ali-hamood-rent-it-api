@@ -21,7 +21,6 @@ export async function up(knex) {
                 .inTable('users')
                 .onDelete('CASCADE')
                 .onUpdate('CASCADE');
-                
             table.foreign('rented_by_user_id')
                 .references('id')
                 .inTable('users')

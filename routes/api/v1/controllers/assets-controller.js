@@ -99,7 +99,8 @@ const getRentedAssets = async (req, res) => {
             });
         }
 
-        return res.status(200).json(rentedAssets);
+        const rentedAssetsFiltered = rentedAssets.filter((asset) => asset.is_rented);
+        return res.status(200).json(rentedAssetsFiltered);
     } catch (error) {
         logError(error, 'retrieving rented assets');
         return res.status(500).json({
@@ -183,7 +184,8 @@ const uploadAssetDetails = async (req, res) => {
                 period: assetDetails.period,
                 description: assetDetails.description,
                 is_rented: false,
-                user_id: user.userId
+                user_id: user.userId,
+                rented_by_user_id: user.userId
             });
         if (!id) {
             return res.status(500).json({ error: 'Error uploading asset details' });
