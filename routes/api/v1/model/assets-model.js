@@ -36,7 +36,7 @@ class AssetsModel {
     }
 
     makeMediaUrl = (filename, assetId) => {
-        if (process.env.NODE_ENV === 'dev') {
+        if (process.env.SERVER_ENV === 'dev') {
             return `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}${process.env.MEDIA_DOWNLOAD_DIR}/${assetId}/${filename}`;
         } else {
             return `https://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}${process.env.MEDIA_DOWNLOAD_DIR}/${assetId}/${filename}`;
