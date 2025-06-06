@@ -35,6 +35,14 @@ class AssetsModel {
         return extAry;
     }
 
+    makeMediaUrl = (filename, assetId) => {
+        if (process.env.NODE_ENV === 'dev') {
+            return `http://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}${process.env.MEDIA_DOWNLOAD_DIR}/${assetId}/${filename}`;
+        } else {
+            return `https://${process.env.SERVER_MEDIA_HOST}:${process.env.SERVER_MEDIA_PORT}${process.env.MEDIA_DOWNLOAD_DIR}/${assetId}/${filename}`;
+        }
+    }
+
     storage = multer.diskStorage({
         destination: (req, file, cb) => {
             const assetId = parseInt(req.params.assetsId);
