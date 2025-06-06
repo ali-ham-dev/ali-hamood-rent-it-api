@@ -7,7 +7,7 @@ export async function up(knex) {
         .createTable('assets', (table) => {
             table.increments('id').primary();
             table.string('title').notNullable().defaultTo('');
-            table.json('media').notNullable();
+            table.json('media').notNullable().defaultTo([]);
             table.string('price').notNullable().defaultTo('');
             table.string('period').notNullable().defaultTo('');
             table.text('description').notNullable().defaultTo('');
