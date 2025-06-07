@@ -49,4 +49,9 @@ assetsRouter
     .all(validateJwtToken)
     .post(myAssetsLimiter, assetsController.uploadAssetDetails);
 
+assetsRouter
+    .route('/user/delete/asset/:assetId')
+    .all(validateJwtToken)
+    .delete(myAssetsLimiter, assetsController.deleteAsset);
+
 export default assetsRouter;

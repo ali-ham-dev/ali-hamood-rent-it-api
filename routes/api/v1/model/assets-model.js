@@ -87,6 +87,13 @@ class AssetsModel {
             fileFilter: this.fileFilter
         });
     }
+
+    deleteAssetFiles(assetId) {
+        const mediaDir = path.join(process.env.ROOT_DIR, process.env.MEDIA_UPLOAD_DIR, assetId.toString());
+        if (fs.existsSync(mediaDir)) {
+            fs.rmSync(mediaDir, { recursive: true, force: true });
+        }
+    }
 }
 
 export default new AssetsModel();
