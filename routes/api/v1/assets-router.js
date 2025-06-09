@@ -50,8 +50,13 @@ assetsRouter
     .post(myAssetsLimiter, assetsController.uploadAssetDetails);
 
 assetsRouter
-    .route('/user/delete/asset/:assetId')
+    .route('/start-rent/:assetId')
     .all(validateJwtToken)
-    .delete(myAssetsLimiter, assetsController.deleteAsset);
+    .post(myAssetsLimiter, assetsController.startRent);
+
+assetsRouter
+    .route('/end-rent/:assetId')
+    .all(validateJwtToken)
+    .post(myAssetsLimiter, assetsController.endRent);
 
 export default assetsRouter;

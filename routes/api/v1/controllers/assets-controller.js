@@ -254,6 +254,115 @@ const deleteAsset = async (req, res) => {
     }
 }
 
+const startRent = async (req, res) => {
+    try {
+        console.log('starting rent');
+        const assetId = req.params.assetId;
+        const user = req.user;
+
+        if (!user) {
+            return res.status(401).json({
+                message: 'Unauthorized'
+            });
+        }
+
+        const asset = await knex('assets')
+            .where('id', assetId)
+            .select('*')
+            .first();
+
+        if (!asset) {
+            return res.status(404).json({
+                message: 'Asset not found'
+            });
+        }
+
+        if (asset.is_rented) {
+            return res.status(403).json({
+                message: 'Asset is already rented'
+            });
+        }
+
+        const owner = await knex('users')
+            .where('id', asset.user_id)
+            .select('*')
+            .first();
+        
+        if (!owner) {
+            return res.status(404).json({
+                message: 'Owner not found'
+            });
+        }
+
+        await knex('assets')
+            .where('id', assetId)
+            .update({
+                is_rented: true,
+                rented_by_user_id: user.userId
+            });
+
+        return res.status(200).json({
+            message: 'Asset rented successfully',
+            assetId: assetId,
+            overEmail: owner.email,
+            overName: owner.name,
+            ownerLastName: owner.last_name,
+            ownerPhone: owner.phone,
+        });
+    } catch (error) {
+        logError(error, 'starting rent');
+        return res.status(500).json({
+            message: 'Error starting rent'
+        });
+    }
+}
+
+const endRent = async (req, res) => {
+    try {
+        const assetId = req.params.assetId;
+        const user = req.user;
+
+        if (!user) {
+            return res.status(401).json({
+                message: 'Unauthorized'
+            });
+        }
+
+        const asset = await knex('assets')
+            .where('id', assetId)
+            .select('*')
+            .first();
+
+        if (!asset) {
+            return res.status(404).json({
+                message: 'Asset not found'
+            });
+        }
+
+        if (asset.is_rented) {
+            return res.status(403).json({
+                message: 'Asset is not rented'
+            });
+        }
+
+        await knex('assets')
+            .where('id', assetId)
+            .update({
+                is_rented: false,
+                rented_by_user_id: null
+            });
+
+        return res.status(200).json({
+            message: 'Asset rent ended successfully'
+        });
+    } catch (error) {
+        logError(error, 'ending rent');
+        return res.status(500).json({
+            message: 'Error ending rent'
+        });
+    }
+}
+
 export { 
     getAsset, 
     getAssets,
@@ -261,5 +370,7 @@ export {
     uploadAssetDetails,
     getAssetsForRent,
     getRentedAssets,
-    deleteAsset
+    deleteAsset,
+    startRent,
+    endRent
 };
