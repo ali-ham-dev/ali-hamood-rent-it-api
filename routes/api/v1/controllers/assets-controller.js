@@ -339,7 +339,7 @@ const endRent = async (req, res) => {
             });
         }
 
-        if (asset.is_rented) {
+        if (!asset.is_rented) {
             return res.status(403).json({
                 message: 'Asset is not rented'
             });
@@ -349,7 +349,7 @@ const endRent = async (req, res) => {
             .where('id', assetId)
             .update({
                 is_rented: false,
-                rented_by_user_id: null
+                rented_by_user_id: asset.user_id
             });
 
         return res.status(200).json({
