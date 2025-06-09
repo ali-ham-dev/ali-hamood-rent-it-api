@@ -345,6 +345,12 @@ const endRent = async (req, res) => {
             });
         }
 
+        if (asset.rented_by_user_id !== user.userId) {
+            return res.status(403).json({
+                message: 'You are not the renter of this asset'
+            });
+        }
+
         await knex('assets')
             .where('id', assetId)
             .update({
