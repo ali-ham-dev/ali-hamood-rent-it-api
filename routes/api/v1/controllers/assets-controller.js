@@ -182,7 +182,7 @@ const uploadAssetDetails = async (req, res) => {
                 media: JSON.stringify([]),
                 price: assetDetails.price,
                 period: assetDetails.period,
-                description: assetDetails.description,
+                description: assetsModel.sanitizeDescription(assetDetails.description),
                 is_rented: false,
                 user_id: user.userId,
                 rented_by_user_id: user.userId

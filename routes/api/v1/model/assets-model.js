@@ -2,8 +2,12 @@ import { logError } from '../../../../utils/logger.js';
 import fs from 'fs';
 import path from 'path';
 import multer from 'multer';
+import createDOMPurify from 'dompurify';
+import { JSDOM } from 'jsdom';
 
 class AssetsModel {
+    window = new JSDOM('').window;
+    DOMPurify = createDOMPurify(this.window);
 
     constructor() {
         this.RATE_LIMIT_RULES = {
@@ -93,6 +97,23 @@ class AssetsModel {
         if (fs.existsSync(mediaDir)) {
             fs.rmSync(mediaDir, { recursive: true, force: true });
         }
+    }
+
+    sanitizeDescription(description) {
+        return this.DOMPurify.sanitize(description, {
+            ALLOWED_TAGS: [
+                'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'p', 'a', 'ul', 'ol',
+                'nl', 'li', 'b', 'i', 'strong', 'em', 'strike', 'code', 'hr', 'br', 'div',
+                'table', 'thead', 'caption', 'tbody', 'tr', 'th', 'td', 'pre', 'span', 'img'
+            ],
+            ALLOWED_ATTR: ['href', 'name', 'target', 'src', 'alt', 'class', 'style'],
+            ALLOWED_STYLES: ['color', 'text-align', 'font-size', 'font-weight', 'font-style', 'text-decoration'],
+            ALLOW_DATA_ATTR: false,
+            ADD_ATTR: ['target'],
+            ADD_TAGS: ['img'],
+            FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed'],
+            FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onmouseout', 'onkeydown', 'onkeyup', 'onkeypress']
+        });
     }
 }
 
