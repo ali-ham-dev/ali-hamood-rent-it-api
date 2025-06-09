@@ -204,7 +204,6 @@ const uploadAssetDetails = async (req, res) => {
 
 const deleteAsset = async (req, res) => {
     try {
-        console.log('deleting asset');
         const assetId = req.params.assetId;
         const user = req.user;
 
@@ -213,36 +212,36 @@ const deleteAsset = async (req, res) => {
                 message: 'Unauthorized'
             });
         }
-        console.log('deleting asset 1');
+
         const asset = await knex('assets')
             .where('id', assetId)
             .select('*')
             .first();
-        console.log('deleting asset 2');
+
         if (!asset) {
             return res.status(404).json({
                 message: 'Asset not found'
             });
         }
-        console.log('deleting asset 3');
+
         if (asset.user_id !== user.userId) {
             return res.status(403).json({
                 message: 'Unauthorized'
             });
         }
-        console.log('deleting asset 4');
+
         if (asset.is_rented) {
             return res.status(403).json({
                 message: 'Asset is rented'
             });
         }
-        console.log('deleting asset 5');
+
         assetsModel.deleteAssetFiles(assetId);
-        console.log('deleting asset 6');
+
         await knex('assets')
             .where('id', assetId)
             .delete();
-        console.log('deleting asset 7');
+
         return res.status(200).json({
             message: 'Asset deleted successfully'
         });
