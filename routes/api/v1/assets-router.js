@@ -50,6 +50,16 @@ assetsRouter
     .post(myAssetsLimiter, assetsController.uploadAssetDetails);
 
 assetsRouter
+    .route('/edit/media/:assetsId')
+    .all(validateJwtToken)
+    .post(myAssetsLimiter, assetsController.editMedia);
+
+assetsRouter
+    .route('/edit/asset')
+    .all(validateJwtToken)
+    .post(myAssetsLimiter, assetsController.editAssetDetails);
+
+assetsRouter
     .route('/start-rent/:assetId')
     .all(validateJwtToken)
     .post(myAssetsLimiter, assetsController.startRent);

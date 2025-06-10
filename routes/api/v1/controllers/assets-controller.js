@@ -172,6 +172,18 @@ const uploadMedia = async (req, res) => {
     }
 };
 
+const editMedia = async (req, res) => {
+    try {
+        
+        
+    } catch (error) {
+        logError(error, 'editing media');
+        return res.status(500).json({
+            message: 'Error editing media'
+        });
+    }
+}
+
 const uploadAssetDetails = async (req, res) => {
     try {
         const assetDetails = req.body;
@@ -198,6 +210,18 @@ const uploadAssetDetails = async (req, res) => {
         logError(error, 'uploading asset details');
         return res.status(500).json({
             message: 'Error uploading asset details'
+        });
+    }
+}
+
+const editAssetDetails = async (req, res) => {
+    try {
+        
+        
+    } catch (error) {
+        logError(error, 'editing asset details');
+        return res.status(500).json({
+            message: 'Error editing asset details'
         });
     }
 }
@@ -372,7 +396,9 @@ export {
     getAsset, 
     getAssets,
     uploadMedia,
+    editMedia,
     uploadAssetDetails,
+    editAssetDetails,
     getAssetsForRent,
     getRentedAssets,
     deleteAsset,
