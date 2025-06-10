@@ -23,6 +23,28 @@ export async function seed(knex) {
             "createdAt": new Date(),
             "updatedAt": new Date(),
             "lastLogin": new Date()
+        },
+        {
+            "firstName": "John",
+            "lastName": "Doe",
+            "email": "john@gmail.com",
+            "phone": "1234567890",
+            "password": hashedPassword,
+            "verificationRequested": false,
+            "createdAt": new Date(),
+            "updatedAt": new Date(),
+            "lastLogin": new Date()
+        },
+        {
+            "firstName": "Ben",
+            "lastName": "Smith",
+            "email": "ben@gmail.com",
+            "phone": "1234567890",
+            "password": hashedPassword,
+            "verificationRequested": false,
+            "createdAt": new Date(),
+            "updatedAt": new Date(),
+            "lastLogin": new Date()
         }
     ]);
 }
