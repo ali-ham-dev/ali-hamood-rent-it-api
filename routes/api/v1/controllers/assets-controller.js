@@ -7,6 +7,8 @@ import multer from 'multer';
 
 const knex = initKnex(configuration);
 
+// TODO: add validation for asset details
+
 const getAssets = async (req, res) => {
     try {
         const assets = await knex('assets')
@@ -174,8 +176,51 @@ const uploadMedia = async (req, res) => {
 
 const editMedia = async (req, res) => {
     try {
+        const assetId = req.params.assetsId;
+        const media = req.body.media;
+        const user = req.user;
+
+        if (!user || !assetId || !media) {
+            return res.status(401).json({
+                message: 'Unauthorized'
+            });
+        }
+
+        const asset = await knex('assets')
+            .where('id', assetId)
+            .select('*')
+            .first();
+
+        if (!asset) {
+            return res.status(404).json({
+                message: 'Asset not found'
+            });
+        }
+
+        if (asset.user_id !== user.userId) {
+            return res.status(403).json({
+                message: 'Unauthorized'
+            });
+        }
+
+        if (asset.is_rented) {
+            return res.status(403).json({
+                message: 'Asset is rented'
+            });
+        }
+
+        console.log('editing media');
+
+        await knex('assets')
+            .where('id', assetId)
+            .update({
+                media: JSON.stringify(media),
+            });
         
-        
+        return res.status(200).json({
+            message: 'Media edited successfully',
+            assetId: assetId
+        });
     } catch (error) {
         logError(error, 'editing media');
         return res.status(500).json({
@@ -183,7 +228,7 @@ const editMedia = async (req, res) => {
         });
     }
 }
-
+ 
 const uploadAssetDetails = async (req, res) => {
     try {
         const assetDetails = req.body;
@@ -216,7 +261,46 @@ const uploadAssetDetails = async (req, res) => {
 
 const editAssetDetails = async (req, res) => {
     try {
+        const user = req.user;
+        const assetId = req.params.assetsId;
+        const assetDetails = req.body;
+
+        if (!user || !assetId || !assetDetails) {
+            return res.status(401).json({
+                message: 'Unauthorized'
+            });
+        }
+
+        const asset = await knex('assets')
+            .where('id', assetId)
+            .select('*')
+            .first();
+
+        if (!asset) {
+            return res.status(404).json({
+                message: 'Asset not found'
+            });
+        }
+
+        if (asset.user_id !== user.userId) {
+            return res.status(403).json({
+                message: 'Unauthorized'
+            });
+        }
+
+        await knex('assets')
+            .where('id', assetId)
+            .update({
+                title: assetDetails.title,
+                price: assetDetails.price,
+                period: assetDetails.period,
+                description: assetsModel.sanitizeDescription(assetDetails.description),
+            });
         
+        return res.status(200).json({
+            message: 'Asset details edited successfully',
+            assetId: assetId
+        });
         
     } catch (error) {
         logError(error, 'editing asset details');

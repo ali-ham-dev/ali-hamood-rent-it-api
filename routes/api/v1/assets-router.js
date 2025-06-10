@@ -52,12 +52,12 @@ assetsRouter
 assetsRouter
     .route('/edit/media/:assetsId')
     .all(validateJwtToken)
-    .post(myAssetsLimiter, assetsController.editMedia);
+    .put(myAssetsLimiter, assetsController.editMedia);
 
 assetsRouter
-    .route('/edit/asset')
+    .route('/edit/asset/:assetsId')
     .all(validateJwtToken)
-    .post(myAssetsLimiter, assetsController.editAssetDetails);
+    .put(myAssetsLimiter, assetsController.editAssetDetails);
 
 assetsRouter
     .route('/start-rent/:assetId')
